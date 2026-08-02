@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div x-data="{ theme: 'dark' }" 
+     :class="theme === 'dark' ? 'bg-[#050913] text-white' : 'bg-slate-100 text-slate-900'" 
+     class="min-h-screen font-sans transition-colors duration-300 p-6 md:p-10 relative">
+
+  <!-- TOP HEADER / NAVBAR -->
+  <header class="max-w-6xl mx-auto flex items-center justify-between pb-6 mb-8 border-b transition-colors"
+          :class="theme === 'dark' ? 'border-slate-800' : 'border-slate-300'">
+    
+    <!-- BRAND LOGO -->
+    <a href="{% url 'home' %}" class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-lg shadow-lg shadow-cyan-500/10">
+        🛡️
+      </div>
+      <span class="text-xl font-extrabold tracking-wider uppercase">MediSense</span>
+    </a>
+
+    <!-- RECORD ID & THEME TOGGLE -->
+    <div class="flex items-center gap-4">
+      <div class="hidden sm:flex items-center gap-2 text-xs font-mono tracking-widest uppercase"
+           :class="theme === 'dark' ? 'text-slate-400' : 'text-slate-600'">
+        <span>RECORD #MSN-2024-0847</span>
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      </div>
+
+      <!-- Theme Switcher Button -->
+      <button @click="theme = theme === 'dark' ? 'light' : 'dark'" 
+              type="button" 
+              class="flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-semibold transition-all"
+              :class="theme === 'dark' ? 'border-cyan-500/40 bg-cyan-950/40 text-cyan-400 hover:bg-cyan-950/80' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100 shadow-sm'">
+        <span x-text="theme === 'dark' ? '☀️ Light' : '🌙 Dark'"></span>
+      </button>
+
+      <!-- Logout Button -->
+      <a href="{% url 'login' %}" 
+         class="px-3.5 py-1.5 text-xs font-semibold rounded-xl border transition-all"
+         :class="theme === 'dark' ? 'border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20' : 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100'">
+        Sign Out
+      </a>
+    </div>
+  </header>
+
+  <!-- DASHBOARD MAIN CONTENT -->
+  <main class="max-w-6xl mx-auto space-y-6">
+
+    <!-- DJANGO ALERTS / MESSAGES CONTAINER -->
+    {% if messages %}
+      <div class="space-y-2">
+        {% for message in messages %}
+          <div class="p-4 rounded-2xl border text-xs font-semibold flex items-center justify-between"
+               :class="theme === 'dark' 
+                 ? '{% if message.tags == "error" %}bg-rose-500/10 border-rose-500/30 text-rose-400{% else %}bg-emerald-500/10 border-emerald-500/30 text-emerald-400{% endif %}' 
+                 : '{% if message.tags == "error" %}bg-rose-50 border-rose-200 text-rose-700{% else %}bg-emerald-50 border-emerald-200 text-emerald-700{% endif %}'">
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- PATIENT PROFILE CARD -->
+    <div class="p-6 md:p-8 rounded-3xl border shadow-2xl transition-colors relative overflow-hidden"
+         :class="theme === 'dark' ? 'bg-[#0a111e]/90 border-cyan-500/20 shadow-cyan-950/30' : 'bg-white border-slate-200 shadow-slate-200'">
+      
+      <div class="flex flex-col md:flex-row items-start md:items-center gap-6 pb-6 border-b"
+           :class="theme === 'dark' ? 'border-slate-800/80' : 'border-slate-200'">
+        
+        <!-- AVATAR BOX -->
+        <div class="flex flex-col items-center gap-2">
+          <div class="w-20 h-20 rounded-2xl bg-cyan-500/10 border-2 border-cyan-500/40 flex items-center justify-center text-cyan-400 text-3xl shadow-inner">
+            👤
+          </div>
+          <span class="px-2.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono font-bold text-[10px] tracking-wider uppercase">
+            Active
+          </span>
+        </div>
+
+        <!-- DETAILS GRID -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-y-4 gap-x-12 w-full">
+          
+          <!-- Column 1 -->
+          <div class="space-y-4">
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Full Name</p>
+              <h2 class="text-xl md:text-2xl font-bold tracking-tight">
+                {{ request.user.get_full_name|default:request.user.username }}
+              </h2>
+            </div>
+
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Date of Birth</p>
+              <p class="text-sm font-semibold">
+                March 14, 1981 · <span class="text-cyan-400 font-bold">43 yrs</span>
+              </p>
+            </div>
+
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Primary Physician</p>
+              <p class="text-sm font-semibold">Dr. Anika Reyes, MD</p>
+            </div>
+          </div>
+
+          <!-- Column 2 -->
+          <div class="space-y-4">
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Patient ID</p>
+              <p class="text-sm font-mono font-bold text-cyan-400 tracking-wider">
+                PTN-2019-084712
+              </p>
+            </div>
+
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Blood Type</p>
+              <p class="text-sm font-bold text-rose-500">A+</p>
+            </div>
+
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Insurance</p>
+              <p class="text-sm font-semibold">BlueCross BlueShield / <span class="text-slate-400 font-medium">PPO</span></p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- CONTACT FOOTER BAR -->
+      <div class="pt-4 flex flex-wrap items-center gap-6 text-xs font-mono"
+           :class="theme === 'dark' ? 'text-slate-400' : 'text-slate-600'">
+        <div class="flex items-center gap-2">
+          <span>📞</span>
+          <span>+1 (312) 555-0194</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span>✉️</span>
+          <span>{{ request.user.email|default:"patient@email.com" }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span>📍</span>
+          <span>412 Lakeview Dr, Chicago, IL 60614</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- QUICK ACTIONS & LAB REPORT SECTION -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- Upload Lab Report Card (WIRED TO UPLOAD_REPORT VIEW) -->
+      <div class="p-6 rounded-3xl border transition-colors"
+           :class="theme === 'dark' ? 'bg-[#0a111e]/90 border-slate-800' : 'bg-white border-slate-200'">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-cyan-400 mb-2">Upload Diagnostic Report</h3>
+        <p class="text-xs text-slate-400 mb-4">Submit your latest lab results for instant AI analysis.</p>
+        
+        <form action="{% url 'upload_report' %}" method="POST" enctype="multipart/form-data" class="space-y-3">
+          {% csrf_token %}
+          <input type="file" name="report_file" accept=".pdf,.png,.jpg,.jpeg" required 
+                 class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer">
+          <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-bold bg-cyan-400 text-slate-950 hover:bg-cyan-300 transition">
+            Analyze Report ➔
+          </button>
+        </form>
+      </div>
+
+      <!-- Recent AI Insights Card (DYNAMICALLY PARSES SESSION INSIGHTS) -->
+      <div class="md:col-span-2 p-6 rounded-3xl border transition-colors flex flex-col justify-between"
+           :class="theme === 'dark' ? 'bg-[#0a111e]/90 border-slate-800' : 'bg-white border-slate-200'">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-cyan-400">Recent AI Health Insights</h3>
+            {% if ai_insight %}
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                Source: {{ ai_insight.filename }}
+              </span>
+            {% endif %}
+          </div>
+
+          {% if ai_insight %}
+            <p class="text-xs text-slate-300 mb-4">{{ ai_insight.summary }}</p>
+            
+            <!-- Flagged Metrics Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+              {% for flag in ai_insight.flags %}
+                <div class="p-2.5 rounded-xl border bg-rose-500/5 border-rose-500/20">
+                  <p class="text-[10px] uppercase font-bold text-slate-400 mb-0.5">{{ flag.metric }}</p>
+                  <p class="text-xs font-bold text-rose-400">{{ flag.val }}</p>
+                  <span class="text-[9px] font-mono font-bold text-rose-500">{{ flag.status }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-xs text-slate-400 mb-4">No active high-risk flags detected in your recent vitals stream.</p>
+          {% endif %}
+        </div>
+
+        <div class="p-4 rounded-2xl border"
+             :class="theme === 'dark' ? 'bg-[#050913] border-slate-800' : 'bg-slate-50 border-slate-200'">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-semibold {% if ai_insight %}text-rose-400{% else %}text-emerald-400{% endif %}">
+              ● {% if ai_insight %}{{ ai_insight.status }}{% else %}Vitals Normal{% endif %}
+            </span>
+            <span class="text-[10px] text-slate-500">
+              Updated {% if ai_insight %}{{ ai_insight.timestamp }}{% else %}2 hours ago{% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+{% endblock %}

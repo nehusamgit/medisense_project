@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div x-data="{ role: 'patient', theme: 'dark' }" 
+     :class="theme === 'dark' ? 'bg-[#060b13] text-white' : 'bg-slate-100 text-slate-800'" 
+     class="min-h-screen relative flex items-center justify-center p-4 transition-colors duration-300 font-sans">
+
+  <!-- Light/Dark Switcher -->
+  <button @click="theme = theme === 'dark' ? 'light' : 'dark'" 
+          type="button"
+          class="absolute top-6 right-6 flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-medium transition-all"
+          :class="theme === 'dark' ? 'border-slate-800 bg-[#0a111e] text-slate-300 hover:border-cyan-500' : 'border-slate-300 bg-white text-slate-700 hover:border-cyan-600 shadow-sm'">
+    <span x-text="theme === 'dark' ? '☀️ Light' : '🌙 Dark'"></span>
+  </button>
+
+  <!-- Auth Card Container -->
+  <div id="auth-card" 
+       class="w-full max-w-md p-8 rounded-3xl border shadow-2xl transition-all duration-300"
+       :class="theme === 'dark' ? 'bg-[#0a111e]/90 border-slate-800/80 shadow-cyan-950/20' : 'bg-white border-slate-200 shadow-slate-200'">
+
+    <!-- Logo & Title Header -->
+    <div class="flex flex-col items-center mb-6 text-center">
+      <div class="w-12 h-12 mb-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-extrabold text-2xl shadow-lg shadow-cyan-500/10">
+        ⊕
+      </div>
+      <h1 class="text-2xl font-bold tracking-tight">MediSense</h1>
+      <p class="text-xs tracking-widest text-cyan-500 uppercase font-semibold mt-0.5">AI Healthcare</p>
+      
+      <h2 class="text-xl font-semibold mt-4">Create your account</h2>
+      <p class="text-xs text-slate-400 mt-1">Join MediSense to get started</p>
+    </div>
+
+    <!-- Sign In / Register Tab Switcher -->
+    <div class="grid grid-cols-2 p-1 mb-6 rounded-xl border"
+         :class="theme === 'dark' ? 'bg-[#060b13] border-slate-800' : 'bg-slate-100 border-slate-200'">
+      <a href="{% url 'login' %}" 
+         class="py-2 text-center text-xs font-medium text-slate-400 hover:text-cyan-500 transition">
+         Sign In
+      </a>
+      <button type="button" class="py-2 text-center text-xs font-semibold rounded-lg bg-cyan-950/60 border border-cyan-500/40 text-cyan-400 shadow-sm">Register</button>
+    </div>
+
+    <!-- Flash Messages -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="p-3 mb-4 text-xs rounded-xl text-center border font-medium {% if message.tags == 'error' %} bg-red-500/10 border-red-500/30 text-red-400 {% else %} bg-emerald-500/10 border-emerald-500/30 text-emerald-400 {% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Form -->
+    <!-- Inside templates/register.html -->
+
+<form method="POST" action="{% url 'register' %}" enctype="multipart/form-data" class="space-y-4" novalidate>
+    {% csrf_token %}
+
+    <!-- Display Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="p-3 text-xs font-semibold rounded-xl border {% if message.tags == 'error' %}bg-rose-500/10 border-rose-500/30 text-rose-400{% else %}bg-emerald-500/10 border-emerald-500/30 text-emerald-400{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Role Selection -->
+    <div>
+        <label class="text-xs font-semibold text-slate-300 uppercase">Register As</label>
+        <select name="role" class="w-full mt-1 p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 text-sm">
+            <option value="patient">Patient</option>
+            <option value="doctor">Doctor</option>
+        </select>
+    </div>
+
+    <!-- Full Name -->
+    <div>
+        <label class="text-xs font-semibold text-slate-300 uppercase">Full Name</label>
+        <input type="text" name="first_name" placeholder="e.g. Alex Johnson" 
+               class="w-full mt-1 p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 text-sm">
+    </div>
+
+    <!-- Email Address -->
+    <div>
+        <label class="text-xs font-semibold text-slate-300 uppercase">Email Address</label>
+        <input type="email" name="email" placeholder="alex@email.com" 
+               class="w-full mt-1 p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 text-sm">
+    </div>
+
+    <!-- Age Field -->
+    <div>
+        <label class="text-xs font-semibold text-slate-300 uppercase">Age</label>
+        <input type="number" name="age" placeholder="35" 
+               class="w-full mt-1 p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 text-sm">
+    </div>
+
+    <!-- Medical Report Field -->
+    <div id="report-field-container">
+    <label class="text-xs font-semibold text-slate-300 uppercase">Medical Report / Prescription (Optional)</label>
+    <input type="file" name="report_file" accept=".pdf,.png,.jpg,.jpeg" 
+           class="w-full mt-1 p-2 bg-slate-800 border border-slate-700 rounded-xl text-slate-300 text-xs file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-500/20 file:text-sky-400 hover:file:bg-sky-500/30 cursor-pointer">
+</div>
+
+    <!-- Username -->
+    <div>
+        <label class="text-xs font-semibold text-slate-300 uppercase">Username</label>
+        <input type="text" name="username" placeholder="alex35" 
+               class="w-full mt-1 p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 text-sm">
+    </div>
+
+    <!-- Password -->
+    <div>
+        <label class="text-xs font-semibold text-slate-300 uppercase">Password</label>
+        <input type="password" name="password" 
+               class="w-full mt-1 p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 text-sm">
+    </div>
+
+    <!-- Confirm Password -->
+    <div>
+        <label class="text-xs font-semibold text-slate-300 uppercase">Confirm Password</label>
+        <input type="password" name="confirm_password" 
+               class="w-full mt-1 p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 text-sm">
+    </div>
+
+    <button type="submit" class="w-full py-3 bg-sky-500 hover:bg-sky-600 font-semibold rounded-xl text-white transition">
+        Register Account
+    </button>
+</form>
+{% endblock %}
+
+<script>
+    const roleSelect = document.querySelector('select[name="role"]');
+    const reportContainer = document.getElementById('report-field-container');
+
+    function toggleReportField() {
+        if (roleSelect.value === 'doctor') {
+            reportContainer.style.display = 'none';
+        } else {
+            reportContainer.style.display = 'block';
+        }
+    }
+
+    roleSelect.addEventListener('change', toggleReportField);
+    toggleReportField(); // Initial check on page load
+</script>
