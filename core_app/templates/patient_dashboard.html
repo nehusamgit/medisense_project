@@ -21,7 +21,7 @@
     <div class="flex items-center gap-4">
       <div class="hidden sm:flex items-center gap-2 text-xs font-mono tracking-widest uppercase"
            :class="theme === 'dark' ? 'text-slate-400' : 'text-slate-600'">
-        <span>RECORD #MSN-2024-0847</span>
+        <span>RECORD #MSN-2026-0847</span>
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
       </div>
 
@@ -89,13 +89,6 @@
             </div>
 
             <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Date of Birth</p>
-              <p class="text-sm font-semibold">
-                March 14, 1981 · <span class="text-cyan-400 font-bold">43 yrs</span>
-              </p>
-            </div>
-
-            <div>
               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Primary Physician</p>
               <p class="text-sm font-semibold">Dr. Anika Reyes, MD</p>
             </div>
@@ -104,20 +97,15 @@
           <!-- Column 2 -->
           <div class="space-y-4">
             <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Patient ID</p>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">User Role</p>
               <p class="text-sm font-mono font-bold text-cyan-400 tracking-wider">
-                PTN-2019-084712
+                REGISTERED PATIENT
               </p>
             </div>
 
             <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Blood Type</p>
-              <p class="text-sm font-bold text-rose-500">A+</p>
-            </div>
-
-            <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Insurance</p>
-              <p class="text-sm font-semibold">BlueCross BlueShield / <span class="text-slate-400 font-medium">PPO</span></p>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Email Address</p>
+              <p class="text-sm font-semibold">{{ request.user.email|default:"patient@email.com" }}</p>
             </div>
           </div>
 
@@ -128,17 +116,123 @@
       <div class="pt-4 flex flex-wrap items-center gap-6 text-xs font-mono"
            :class="theme === 'dark' ? 'text-slate-400' : 'text-slate-600'">
         <div class="flex items-center gap-2">
-          <span>📞</span>
-          <span>+1 (312) 555-0194</span>
-        </div>
-        <div class="flex items-center gap-2">
           <span>✉️</span>
           <span>{{ request.user.email|default:"patient@email.com" }}</span>
         </div>
         <div class="flex items-center gap-2">
-          <span>📍</span>
-          <span>412 Lakeview Dr, Chicago, IL 60614</span>
+          <span>🕒</span>
+          <span>Member since {{ request.user.date_joined|date:"M Y" }}</span>
         </div>
+      </div>
+
+    </div>
+
+    <!-- DAILY VITALS INPUT & AI RISK ASSESSMENT (PHASE 1 CORE) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <!-- Vitals Input Form -->
+      <div class="md:col-span-2 p-6 rounded-3xl border transition-colors space-y-4"
+           :class="theme === 'dark' ? 'bg-[#0a111e]/90 border-slate-800' : 'bg-white border-slate-200'">
+        <div class="flex items-center justify-between border-b pb-3"
+             :class="theme === 'dark' ? 'border-slate-800' : 'border-slate-200'">
+          <h3 class="text-sm font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-2">
+            <span>🩺</span>
+            <span>Daily Vitals Input Portal</span>
+          </h3>
+          <span class="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">Phase 1 Entry</span>
+        </div>
+
+        <form action="{% url 'log_vitals' %}" method="POST" class="space-y-4">
+          {% csrf_token %}
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            <!-- Blood Pressure -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1">Blood Pressure (mmHg)</label>
+              <div class="flex items-center gap-2">
+                <input type="number" name="systolic_bp" required placeholder="Systolic (120)" 
+                       class="w-full text-xs rounded-xl px-3 py-2 border focus:outline-none focus:border-cyan-400 transition"
+                       :class="theme === 'dark' ? 'bg-slate-900/80 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900'">
+                <span class="text-slate-500 font-bold">/</span>
+                <input type="number" name="diastolic_bp" required placeholder="Diastolic (80)" 
+                       class="w-full text-xs rounded-xl px-3 py-2 border focus:outline-none focus:border-cyan-400 transition"
+                       :class="theme === 'dark' ? 'bg-slate-900/80 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900'">
+              </div>
+            </div>
+
+            <!-- Blood Glucose -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1">Blood Glucose (mg/dL)</label>
+              <input type="number" step="0.1" name="blood_sugar" required placeholder="e.g. 105.0" 
+                     class="w-full text-xs rounded-xl px-3 py-2 border focus:outline-none focus:border-cyan-400 transition"
+                     :class="theme === 'dark' ? 'bg-slate-900/80 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900'">
+            </div>
+
+            <!-- Heart Rate -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1">Heart Rate (BPM)</label>
+              <input type="number" name="heart_rate" required placeholder="e.g. 72" 
+                     class="w-full text-xs rounded-xl px-3 py-2 border focus:outline-none focus:border-cyan-400 transition"
+                     :class="theme === 'dark' ? 'bg-slate-900/80 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900'">
+            </div>
+
+            <!-- SpO2 -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1">Oxygen Saturation - SpO2 (%)</label>
+              <input type="number" step="0.1" name="spo2_level" required placeholder="e.g. 98.0" 
+                     class="w-full text-xs rounded-xl px-3 py-2 border focus:outline-none focus:border-cyan-400 transition"
+                     :class="theme === 'dark' ? 'bg-slate-900/80 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900'">
+            </div>
+
+          </div>
+
+          <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-bold bg-cyan-400 text-slate-950 hover:bg-cyan-300 transition shadow-lg shadow-cyan-500/10">
+            Submit Daily Vitals & Generate AI Assessment
+          </button>
+        </form>
+      </div>
+
+      <!-- AI Risk Evaluation Output -->
+      <div class="p-6 rounded-3xl border transition-colors flex flex-col justify-between"
+           :class="theme === 'dark' ? 'bg-[#0a111e]/90 border-slate-800' : 'bg-white border-slate-200'">
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-cyan-400 mb-3 flex items-center gap-2">
+            <span>🤖</span>
+            <span>AI Risk Assessment</span>
+          </h3>
+
+          {% if latest_vital and latest_vital.ai_assessment %}
+            {% with eval=latest_vital.ai_assessment %}
+              <div class="p-4 rounded-2xl border space-y-2 mb-4"
+                   :class="theme === 'dark' 
+                     ? '{% if eval.risk_level == "CRITICAL" or eval.risk_level == "HIGH" %}bg-rose-500/10 border-rose-500/30 text-rose-400{% elif eval.risk_level == "MODERATE" %}bg-amber-500/10 border-amber-500/30 text-amber-400{% else %}bg-emerald-500/10 border-emerald-500/30 text-emerald-400{% endif %}' 
+                     : '{% if eval.risk_level == "CRITICAL" or eval.risk_level == "HIGH" %}bg-rose-50 border-rose-200 text-rose-700{% elif eval.risk_level == "MODERATE" %}bg-amber-50 border-amber-200 text-amber-700{% else %}bg-emerald-50 border-emerald-200 text-emerald-700{% endif %}'">
+                
+                <div class="flex justify-between items-center font-bold text-xs">
+                  <span>Level: {{ eval.risk_level }}</span>
+                  <span class="font-mono text-[10px] px-2 py-0.5 rounded border opacity-80">Score: {{ eval.risk_score }}</span>
+                </div>
+
+                <p class="text-xs font-semibold">{{ eval.predicted_condition }}</p>
+                <p class="text-[11px] opacity-90">{{ eval.recommendation }}</p>
+              </div>
+            {% endwith %}
+          {% else %}
+            <div class="p-6 text-center border border-dashed rounded-2xl text-xs text-slate-500 space-y-1"
+                 :class="theme === 'dark' ? 'border-slate-800' : 'border-slate-300'">
+              <p class="font-semibold text-slate-400">No Vitals Logged Today</p>
+              <p class="text-[11px]">Submit your vitals reading to trigger real-time AI risk evaluation.</p>
+            </div>
+          {% endif %}
+        </div>
+
+        {% if latest_vital %}
+          <div class="pt-3 border-t text-[10px] font-mono text-slate-500 flex justify-between"
+               :class="theme === 'dark' ? 'border-slate-800' : 'border-slate-200'">
+            <span>Last Logged:</span>
+            <span>{{ latest_vital.logged_at|date:"H:i, M d, Y" }}</span>
+          </div>
+        {% endif %}
       </div>
 
     </div>
@@ -167,7 +261,7 @@
            :class="theme === 'dark' ? 'bg-[#0a111e]/90 border-slate-800' : 'bg-white border-slate-200'">
         <div>
           <div class="flex items-center justify-between mb-2">
-            <h3 class="text-sm font-bold uppercase tracking-wider text-cyan-400">Recent AI Health Insights</h3>
+            <h3 class="text-sm font-bold uppercase tracking-wider text-cyan-400">Recent AI Document Analysis</h3>
             {% if ai_insight %}
               <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
                 Source: {{ ai_insight.filename }}
@@ -189,7 +283,7 @@
               {% endfor %}
             </div>
           {% else %}
-            <p class="text-xs text-slate-400 mb-4">No active high-risk flags detected in your recent vitals stream.</p>
+            <p class="text-xs text-slate-400 mb-4">No uploaded diagnostic report flags present. Submit a report file above to analyze.</p>
           {% endif %}
         </div>
 
@@ -197,7 +291,7 @@
              :class="theme === 'dark' ? 'bg-[#050913] border-slate-800' : 'bg-slate-50 border-slate-200'">
           <div class="flex items-center justify-between text-xs">
             <span class="font-semibold {% if ai_insight %}text-rose-400{% else %}text-emerald-400{% endif %}">
-              ● {% if ai_insight %}{{ ai_insight.status }}{% else %}Vitals Normal{% endif %}
+              ● {% if ai_insight %}{{ ai_insight.status }}{% else %}Document Insights Normal{% endif %}
             </span>
             <span class="text-[10px] text-slate-500">
               Updated {% if ai_insight %}{{ ai_insight.timestamp }}{% else %}2 hours ago{% endif %}

@@ -2,14 +2,10 @@ import re
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.core.mail import send_mail
-from django.urls import reverse
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.contrib.auth.tokens import default_token_generator
-from .models import Patient, DoctorProfile
+from .models import Patient, DoctorProfile, PatientVital, AIRiskAssessment
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
+
 
 def register_view(request):
     if request.method == 'POST':
@@ -24,10 +20,10 @@ def register_view(request):
 
         # 1. Check for empty fields
         if not all([username, email, full_name, age_str, password, confirm_password]):
-            messages.error(request, "please enter the fields....")
+            messages.error(request, "Please enter all required fields.")
             return render(request, 'register.html')
 
-        # 2. Full Name Validation (First & Last name required)
+        # 2. Full Name Validation
         name_parts = full_name.split()
         if len(name_parts) < 2:
             messages.error(request, "Please enter your full name (first and last name).")
@@ -67,26 +63,25 @@ def register_view(request):
             messages.error(request, f"Email '{email}' is already registered.")
             return render(request, 'register.html')
 
-        # 7. Create User & Profile
+        # 7. Create Active User & Profile
         try:
             first_name = name_parts[0]
             last_name = ' '.join(name_parts[1:])
 
-            # Account starts inactive until email activation link is clicked
+            # Account is created ACTIVE immediately
             user = User.objects.create_user(
                 username=username,
                 email=email,
                 password=password,
                 first_name=first_name,
                 last_name=last_name,
-                is_active=False
+                is_active=True
             )
 
             if role == 'doctor':
                 DoctorProfile.objects.create(user=user, age=age)
             else:
                 Patient.objects.create(user=user, name=full_name, age=age)
-                # Only save report if registered as Patient
                 if report_file:
                     MedicalReport.objects.create(
                         user=user,
@@ -94,25 +89,7 @@ def register_view(request):
                         report_file=report_file
                     )
 
-            # Generate Activation URL
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            
-            verify_url = request.build_absolute_uri(
-                reverse('verify_email', kwargs={'uidb64': uid, 'token': token})
-            )
-
-            # Send Email (Printed in terminal)
-            send_mail(
-                subject="MediSense - Verify Your Email",
-                message=f"Hi {first_name},\n\nPlease click the link below to activate your account:\n{verify_url}",
-                from_email="noreply@medisense.com",
-                recipient_list=[email],
-                fail_silently=False,
-            )
-
-            # Show Success Message & Redirect to Login Page (NOT Dashboard)
-            messages.success(request, "Registration successful! Please check your terminal/email to activate your account.")
+            messages.success(request, "Registration successful! You can now log in immediately.")
             return redirect('login')
 
         except Exception as e:
@@ -120,22 +97,6 @@ def register_view(request):
             return render(request, 'register.html')
 
     return render(request, 'register.html')
-
-def verify_email_view(request, uidb64, token):
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-
-    if user is not None and default_token_generator.check_token(user, token):
-        user.is_active = True
-        user.save()
-        messages.success(request, "Your email has been verified! You can now log in.")
-        return redirect('login')
-    else:
-        messages.error(request, "Activation link is invalid or has expired.")
-        return redirect('login')
 
 
 def login_view(request):
@@ -147,19 +108,14 @@ def login_view(request):
             messages.error(request, "Please enter both username and password.")
             return render(request, 'login.html')
 
-        # Check if account exists but isn't active (unverified email)
-        try:
-            user_obj = User.objects.get(username=username)
-            if not user_obj.is_active:
-                messages.error(request, "Your account is not verified yet. Please check your terminal/email for the activation link.")
-                return render(request, 'login.html')
-        except User.DoesNotExist:
-            pass  # Fall through to standard authentication failure below
-
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            if hasattr(user, 'doctor_profile'):
+            
+            # ROUTING BASED ON ROLE
+            if user.is_superuser or user.is_staff:
+                return redirect('admin_dashboard')
+            elif hasattr(user, 'doctorprofile') or hasattr(user, 'doctor_profile'):
                 return redirect('doctor_dashboard')
             else:
                 return redirect('patient_dashboard')
@@ -167,20 +123,120 @@ def login_view(request):
             messages.error(request, "Invalid username or password.")
 
     return render(request, 'login.html')
-    
+
+@login_required
+def admin_dashboard(request):
+    """Admin portal to monitor platform metrics and system overview."""
+    if not request.user.is_superuser and not request.user.is_staff:
+        messages.error(request, "Access restricted to Administrators only.")
+        return redirect('login')
+
+    total_patients = Patient.objects.count()
+    total_doctors = DoctorProfile.objects.count()
+    total_users = User.objects.count()
+
+    context = {
+        'total_patients': total_patients,
+        'total_doctors': total_doctors,
+        'total_users': total_users,
+        'recent_users': User.objects.order_by('-date_joined')[:5],
+    }
+    return render(request, 'admin_dashboard.html', context)
+
 
 @login_required
 def patient_dashboard(request):
+    # Safely get or create the Patient profile
+    patient_profile, _ = Patient.objects.get_or_create(
+        user=request.user,
+        defaults={'name': request.user.get_full_name() or request.user.username, 'age': 30}
+    )
+
     ai_insight = request.session.get('latest_ai_insight', None)
     
+    # Fetch recent vitals & latest AI assessment
+    recent_vitals = PatientVital.objects.filter(patient=patient_profile).order_by('-logged_at')[:5]
+    latest_vital = recent_vitals.first()
+
     context = {
-        'ai_insight': ai_insight
+        'ai_insight': ai_insight,
+        'recent_vitals': recent_vitals,
+        'latest_vital': latest_vital,
     }
     return render(request, 'patient_dashboard.html', context)
 
 @login_required
+def log_vitals_view(request):
+    """Logs patient clinical parameters and generates immediate AI Risk Score."""
+    if request.method == 'POST':
+        try:
+            # Safely get or create the patient profile
+            patient_profile, _ = Patient.objects.get_or_create(
+                user=request.user,
+                defaults={'name': request.user.get_full_name() or request.user.username, 'age': 30}
+            )
+
+            sys_bp = int(request.POST.get('systolic_bp', 120))
+            dia_bp = int(request.POST.get('diastolic_bp', 80))
+            hr = int(request.POST.get('heart_rate', 72))
+            sugar = float(request.POST.get('blood_sugar', 100.0))
+            spo2 = float(request.POST.get('spo2_level', 98.0))
+
+            # 1. Save Vitals Entry
+            vital_entry = PatientVital.objects.create(
+                patient=patient_profile,
+                systolic_bp=sys_bp,
+                diastolic_bp=dia_bp,
+                heart_rate=hr,
+                blood_sugar=sugar,
+                spo2_level=spo2
+            )
+
+            # 2. Rule-Based AI Risk Scoring Pipeline
+            risk_score = 0.15
+            risk_level = 'LOW'
+            condition = 'Normal Vitals'
+            recommendation = 'Maintain regular diet, hydration, and daily medication schedule.'
+
+            if sys_bp > 140 or sugar > 180 or spo2 < 93:
+                risk_score = 0.88
+                risk_level = 'CRITICAL'
+                condition = 'Hypertension & Hyperglycemia Risk'
+                recommendation = 'Critical vitals detected. Immediate clinical review required.'
+            elif sys_bp > 130 or sugar > 120:
+                risk_score = 0.55
+                risk_level = 'MODERATE'
+                condition = 'Elevated Blood Pressure / Sugar'
+                recommendation = 'Monitor vitals closely over the next 24 hours.'
+
+            # 3. Save AI Risk Assessment
+            AIRiskAssessment.objects.create(
+                vital=vital_entry,
+                risk_score=risk_score,
+                risk_level=risk_level,
+                predicted_condition=condition,
+                recommendation=recommendation
+            )
+
+            messages.success(request, f"Vitals logged successfully! AI Risk Assessment: {risk_level}")
+
+        except Exception as e:
+            messages.error(request, f"Error saving vitals: {str(e)}")
+
+    return redirect('patient_dashboard')
+
+
+@login_required
 def doctor_dashboard(request):
-    return render(request, 'doctor_dashboard.html')
+    patients = Patient.objects.all().select_related('user')
+    total_patients_count = patients.count()
+    
+    context = {
+        'patients': patients,
+        'total_patients_count': total_patients_count,
+    }
+    return render(request, 'doctor_dashboard.html', context)
+
 
 def home_view(request):
     return render(request, 'home.html')
@@ -203,8 +259,6 @@ def upload_report_view(request):
             return redirect('patient_dashboard')
 
         try:
-            # Simulated AI extraction payload based on report analysis
-            # (Replace this mock dict with your actual AI parser output when ready)
             ai_insights = {
                 'filename': report_file.name,
                 'status': 'Elevated Risk Flags Detected',
@@ -218,9 +272,7 @@ def upload_report_view(request):
                 'timestamp': 'Just now'
             }
 
-            # Store in session so patient_dashboard template can render it
             request.session['latest_ai_insight'] = ai_insights
-
             messages.success(request, f"Report '{report_file.name}' analyzed successfully!")
 
         except Exception as e:
@@ -229,3 +281,4 @@ def upload_report_view(request):
         return redirect('patient_dashboard')
 
     return redirect('patient_dashboard')
+
