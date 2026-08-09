@@ -66,3 +66,14 @@ class AIRiskAssessment(models.Model):
     def __str__(self):
         return f"{self.vital.patient.name} - {self.risk_level} ({self.risk_score})"
 
+class Medication(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='medications')
+    prescribed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    medicine_name = models.CharField(max_length=150)
+    dosage = models.CharField(max_length=50)
+    timing = models.CharField(max_length=50)
+    is_taken_today = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.medicine_name} - {self.patient.name}"

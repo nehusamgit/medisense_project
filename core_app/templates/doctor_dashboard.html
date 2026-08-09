@@ -1,338 +1,205 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doctor Dashboard | MediSense</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brandBg: '#0B132B',
-                        cardBg: '#1E293B',
-                    }
-                }
-            }
-        }
-    </script>
-</head>
-<body class="bg-[#0B132B] text-slate-100 min-h-screen font-sans antialiased relative">
+{% extends 'base.html' %}
 
-    <!-- Top Navigation Bar -->
-    <nav class="w-full px-6 md:px-10 py-4 flex items-center justify-between border-b border-slate-800 bg-[#0F172A]/80 backdrop-blur-md sticky top-0 z-40">
-        <!-- Brand / Logo -->
-        <div class="flex items-center space-x-3">
-            <div class="p-2 bg-sky-500/10 rounded-xl text-sky-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+{% block content %}
+<main class="w-full max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8">
+    
+    <!-- Header & Action Row -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-slate-800/80 pb-6">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">Doctor's Dashboard</h1>
+            <p class="text-sm text-slate-400 mt-0.5">Welcome back. Here is your patient breakdown for today.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4">
+            <!-- Live Search Bar -->
+            <div class="flex items-center bg-slate-900/80 rounded-xl px-4 py-2 w-full sm:w-64 border border-slate-800 focus-within:border-cyan-500/50 transition">
+                <svg class="w-4 h-4 text-slate-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
+                <input type="text" 
+                       name="q" 
+                       placeholder="Search patients..." 
+                       class="bg-transparent text-sm w-full focus:outline-none placeholder-slate-400 text-slate-200"
+                       hx-get="{% url 'doctor_dashboard' %}" 
+                       hx-trigger="keyup changed delay:300ms" 
+                       hx-target="#patient-table-body" 
+                       hx-swap="innerHTML">
             </div>
-            <span class="text-xl font-bold bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">MediSense</span>
-        </div>
 
-        <!-- Search Bar -->
-        <div class="hidden md:flex items-center bg-slate-800/80 rounded-xl px-4 py-2 w-1/3 border border-slate-700/60">
-            <svg class="w-4 h-4 text-slate-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" placeholder="Search patients, medical conditions..." class="bg-transparent text-sm w-full focus:outline-none placeholder-slate-400 text-slate-200">
-        </div>
-
-        <!-- User Profile Info & Logout -->
-        <div class="flex items-center space-x-4">
-            <div class="flex items-center space-x-3 pl-3">
-                <div class="w-9 h-9 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold text-sm border border-sky-400/30">
+            <!-- Doctor Profile Badge -->
+            <div class="flex items-center space-x-3 bg-slate-900/80 px-3.5 py-1.5 rounded-xl border border-slate-800">
+                <div class="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-xs border border-cyan-400/30">
                     Dr
                 </div>
-                <div class="hidden sm:block text-left">
-                    <p class="text-sm font-semibold text-slate-100">{{ request.user.get_full_name|default:request.user.username }}</p>
-                    <p class="text-xs text-sky-400 font-medium">Physician Specialist</p>
+                <div class="text-left">
+                    <p class="text-xs font-semibold text-slate-100">{{ request.user.get_full_name|default:request.user.username }}</p>
+                    <p class="text-[10px] text-cyan-400 font-medium">Physician Specialist</p>
                 </div>
             </div>
-            <a href="{% url 'login' %}" class="px-3 py-1.5 text-xs font-semibold rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition">
+
+            <!-- Sign Out Button -->
+            <a href="{% url 'login' %}" class="px-3.5 py-2 text-xs font-semibold rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition">
                 Sign Out
             </a>
         </div>
-    </nav>
+    </div>
 
-    <!-- Main Container -->
-    <main class="w-full max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8">
-        
-        <!-- Header & Action Row -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <!-- Top Stat Cards Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md p-5 rounded-2xl flex justify-between items-center shadow-lg">
             <div>
-                <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">Doctor's Dashboard</h1>
-                <p class="text-sm text-slate-400 mt-0.5">Welcome back. Here is your patient breakdown for today.</p>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Patients</p>
+                <p class="text-2xl font-bold text-white mt-1">{{ total_patients_count|default:"0" }}</p>
+            </div>
+            <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             </div>
         </div>
 
-        <!-- Top Stat Cards Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md p-5 rounded-2xl flex justify-between items-center shadow-lg">
-                <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Patients</p>
-                    <p class="text-2xl font-bold text-white mt-1">{{ total_patients_count|default:"0" }}</p>
-                </div>
-                <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                </div>
+        <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md p-5 rounded-2xl flex justify-between items-center shadow-lg">
+            <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending Reports</p>
+                <p class="text-2xl font-bold text-amber-400 mt-1">1 <span class="text-xs text-slate-400 font-normal">alert</span></p>
             </div>
-
-            <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md p-5 rounded-2xl flex justify-between items-center shadow-lg">
-                <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending Reports</p>
-                    <p class="text-2xl font-bold text-amber-400 mt-1">1 <span class="text-xs text-slate-400 font-normal">alert</span></p>
-                </div>
-                <div class="p-3 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/20">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                </div>
-            </div>
-
-            <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md p-5 rounded-2xl flex justify-between items-center shadow-lg">
-                <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">High Risk Patients</p>
-                    <p class="text-2xl font-bold text-red-400 mt-1">1 <span class="text-xs text-slate-400 font-normal">critical</span></p>
-                </div>
-                <div class="p-3 bg-red-500/10 text-red-400 rounded-xl border border-red-500/20">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                </div>
-            </div>
-
-            <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md p-5 rounded-2xl flex justify-between items-center shadow-lg">
-                <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Recent Diagnoses</p>
-                    <p class="text-2xl font-bold text-sky-400 mt-1">3</p>
-                </div>
-                <div class="p-3 bg-sky-500/10 text-sky-400 rounded-xl border border-sky-500/20">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                </div>
+            <div class="p-3 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             </div>
         </div>
 
-        <!-- Workspace Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            
-            <!-- Patient Table -->
-            <div class="lg:col-span-2 bg-slate-900/60 border border-slate-800 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-xl">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                    <h2 class="text-lg font-bold text-white">Assigned Patients</h2>
-                    <span class="text-xs bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full border border-sky-500/20">Live List</span>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm border-collapse">
-                        <thead class="text-xs text-slate-400 uppercase border-b border-slate-800">
-                            <tr>
-                                <th class="pb-3 px-3">Patient Name</th>
-                                <th class="pb-3 px-3">Age</th>
-                                <th class="pb-3 px-3">Email</th>
-                                <th class="pb-3 px-3">Status</th>
-                                <th class="pb-3 px-3 text-center">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-800/60">
-                            {% for patient in patients %}
-                            <tr class="hover:bg-slate-800/40 transition">
-                                <td class="py-4 px-3 font-medium text-slate-200 flex items-center space-x-3">
-                                    <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-xs text-sky-400 border border-slate-700">
-                                        {% if patient.user %}
-                                            {{ patient.user.username|slice:":1"|upper }}
-                                        {% else %}
-                                            P
-                                        {% endif %}
-                                    </div>
-                                    <div>
-                                        <span class="block font-semibold text-slate-200">
-                                            {% if patient.user %}{{ patient.user.get_full_name|default:patient.user.username }}{% else %}{{ patient.name }}{% endif %}
-                                        </span>
-                                        {% if patient.user %}
-                                            <span class="text-[10px] text-slate-500 font-mono">@{{ patient.user.username }}</span>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                                <td class="py-4 px-3 text-slate-400">{{ patient.age|default:"N/A" }} yrs</td>
-                                <td class="py-4 px-3 text-slate-400 font-mono text-xs">
-                                    {% if patient.user %}{{ patient.user.email }}{% else %}N/A{% endif %}
-                                </td>
-                                <td class="py-4 px-3">
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                        Active
-                                    </span>
-                                </td>
-                                <td class="py-4 px-3 text-center">
-                                    <button onclick="openPatientModal('{% if patient.user %}{{ patient.user.get_full_name|default:patient.user.username }}{% else %}{{ patient.name }}{% endif %}', '{{ patient.age|default:"N/A" }}', '{% if patient.user %}{{ patient.user.email }}{% else %}N/A{% endif %}')" 
-                                            class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-sky-500/10 hover:bg-sky-500 hover:text-white text-sky-400 border border-sky-500/30 transition">
-                                        View Reports
-                                    </button>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="5" class="py-12 text-center text-slate-500 text-sm">
-                                    No registered patients found in database.
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+        <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md p-5 rounded-2xl flex justify-between items-center shadow-lg">
+            <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">High Risk Patients</p>
+                <p class="text-2xl font-bold text-red-400 mt-1">1 <span class="text-xs text-slate-400 font-normal">critical</span></p>
             </div>
-
-            <!-- Right Side Widgets -->
-            <div class="space-y-6">
-                <!-- AI Alerts Feed -->
-                <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-xl">
-                    <h2 class="text-lg font-bold text-white flex items-center space-x-2">
-                        <span class="w-2 h-2 bg-sky-400 rounded-full animate-pulse"></span>
-                        <span>AI Alerts Feed</span>
-                    </h2>
-                    
-                    <div class="space-y-3">
-                        <div class="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs space-y-1">
-                            <div class="flex justify-between font-semibold text-red-400">
-                                <span>Tom Roy</span>
-                                <span class="text-slate-400">3h ago</span>
-                            </div>
-                            <p class="text-slate-300">Elevated Fasting Glucose (105 mg/dL) & HbA1c (5.9%).</p>
-                        </div>
-
-                        <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs space-y-1">
-                            <div class="flex justify-between font-semibold text-amber-400">
-                                <span>Tom Mathew</span>
-                                <span class="text-slate-400">5h ago</span>
-                            </div>
-                            <p class="text-slate-300">Borderline cholesterol flags detected.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Schedule Widget -->
-                <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-xl">
-                    <h2 class="text-lg font-bold text-white">Weekly Schedule</h2>
-                    <div class="text-center py-8 text-slate-500 text-xs border border-dashed border-slate-800 rounded-xl">
-                        📅 Interactive Schedule Widget
-                    </div>
-                </div>
+            <div class="p-3 bg-red-500/10 text-red-400 rounded-xl border border-red-500/20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             </div>
         </div>
-    </main>
 
-    <!-- PATIENT REPORT MODAL / SLIDE-OVER OVERLAY -->
-    <div id="patientModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden transition-opacity duration-300 p-4">
-        <div class="bg-[#0F172A] border border-slate-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl transform transition-all space-y-6 p-6 md:p-8 relative">
-            
-            <!-- Modal Header -->
-            <div class="flex items-start justify-between border-b border-slate-800 pb-4">
-                <div>
-                    <span class="text-[10px] font-mono font-bold text-sky-400 uppercase tracking-widest block">Patient Diagnostic Dossier</span>
-                    <h2 id="modalPatientName" class="text-2xl font-bold text-white mt-1">Patient Name</h2>
-                    <p class="text-xs text-slate-400 mt-0.5"><span id="modalPatientAge"></span> yrs · <span id="modalPatientEmail"></span></p>
-                </div>
-                <button onclick="closePatientModal()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
-                    ✕
-                </button>
+        <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md p-5 rounded-2xl flex justify-between items-center shadow-lg">
+            <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Recent Diagnoses</p>
+                <p class="text-2xl font-bold text-cyan-400 mt-1">3</p>
             </div>
-
-            <!-- AI Clinical Summary -->
-            <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs space-y-2">
-                <div class="flex items-center justify-between font-bold text-amber-400">
-                    <span>⚠️ AI Diagnostic Risk Flags</span>
-                    <span class="font-mono text-[10px] bg-amber-500/20 px-2 py-0.5 rounded">Action Recommended</span>
-                </div>
-                <p class="text-slate-300">Elevated Fasting Blood Sugar (105.0 mg/dL) and HbA1c (5.9%). Lipids show borderline LDL. Complete Blood Count (CBC) parameters are within normal reference ranges.</p>
+            <div class="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl border border-cyan-500/20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
-
-            <!-- Extracted Lab Metrics Grid -->
-            <div class="space-y-3">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Recent Diagnostic Biomarkers</h3>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                    <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                        <span class="text-slate-500 block text-[10px]">Fasting Glucose</span>
-                        <span class="font-bold text-rose-400 text-sm">105 mg/dL</span>
-                        <span class="text-[10px] text-rose-400 block font-semibold">HIGH</span>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                        <span class="text-slate-500 block text-[10px]">HbA1c</span>
-                        <span class="font-bold text-amber-400 text-sm">5.9%</span>
-                        <span class="text-[10px] text-amber-400 block font-semibold">ELEVATED</span>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                        <span class="text-slate-500 block text-[10px]">Total Cholesterol</span>
-                        <span class="font-bold text-amber-400 text-sm">225 mg/dL</span>
-                        <span class="text-[10px] text-amber-400 block font-semibold">HIGH</span>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                        <span class="text-slate-500 block text-[10px]">Hemoglobin</span>
-                        <span class="font-bold text-emerald-400 text-sm">14.2 g/dL</span>
-                        <span class="text-[10px] text-emerald-400 block font-semibold">NORMAL</span>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                        <span class="text-slate-500 block text-[10px]">WBC Count</span>
-                        <span class="font-bold text-emerald-400 text-sm">6.8 k/uL</span>
-                        <span class="text-[10px] text-emerald-400 block font-semibold">NORMAL</span>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                        <span class="text-slate-500 block text-[10px]">Platelets</span>
-                        <span class="font-bold text-emerald-400 text-sm">250 k/uL</span>
-                        <span class="text-[10px] text-emerald-400 block font-semibold">NORMAL</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Attached Files -->
-            <!-- Attached Files -->
-            <div class="space-y-2">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Uploaded Documents</h3>
-                <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">📄</span>
-                        <div>
-                            <p id="modalFileName" class="font-semibold text-slate-200">lab_results_feb2026.pdf</p>
-                            <span class="text-[10px] text-slate-500">Uploaded 2 hours ago</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center space-x-2">
-                        <span class="px-2.5 py-1 text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20">
-                            Analyzed
-                        </span>
-                        <!-- VIEW REPORT BUTTON -->
-                        <a href="#" target="_blank" id="viewReportBtn" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-sky-500/10 hover:bg-sky-500 hover:text-white text-sky-400 border border-sky-500/30 transition flex items-center space-x-1">
-                            <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                            <span>View Report</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Footer Action Button -->
-            <div class="pt-2 flex justify-end">
-                <button onclick="closePatientModal()" class="px-5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-semibold text-xs transition">
-                    Done Reviewing
-                </button>
-            </div>
-
         </div>
     </div>
 
-    <!-- JS Helper for Modal -->
-    <script>
-        function openPatientModal(name, age, email) {
-            document.getElementById('modalPatientName').innerText = name;
-            document.getElementById('modalPatientAge').innerText = age;
-            document.getElementById('modalPatientEmail').innerText = email;
-            document.getElementById('patientModal').classList.remove('hidden');
-        }
+    <!-- Workspace Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        
+        <!-- Patient Table (HTMX Dynamic Update Container) -->
+        <div class="lg:col-span-2 bg-slate-900/60 border border-slate-800 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h2 class="text-lg font-bold text-white">Assigned Patients</h2>
+                <span class="text-xs bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/20 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                    HTMX Live List
+                </span>
+            </div>
 
-        function closePatientModal() {
-            document.getElementById('patientModal').classList.add('hidden');
-        }
-    </script>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm border-collapse">
+                    <thead class="text-xs text-slate-400 uppercase border-b border-slate-800">
+                        <tr>
+                            <th class="pb-3 px-3">Patient Name</th>
+                            <th class="pb-3 px-3">Age</th>
+                            <th class="pb-3 px-3">Email</th>
+                            <th class="pb-3 px-3">Status</th>
+                            <th class="pb-3 px-3 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patient-table-body" class="divide-y divide-slate-800/60">
+                        {% for patient in patients %}
+                        <tr class="hover:bg-slate-800/40 transition">
+                            <td class="py-4 px-3 font-medium text-slate-200 flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-xs text-cyan-400 border border-slate-700">
+                                    {% if patient.user %}
+                                        {{ patient.user.username|slice:":1"|upper }}
+                                    {% else %}
+                                        P
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <span class="block font-semibold text-slate-200">
+                                        {% if patient.user %}{{ patient.user.get_full_name|default:patient.user.username }}{% else %}{{ patient.name }}{% endif %}
+                                    </span>
+                                    {% if patient.user %}
+                                        <span class="text-[10px] text-slate-500 font-mono">@{{ patient.user.username }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="py-4 px-3 text-slate-400">{{ patient.age|default:"N/A" }} yrs</td>
+                            <td class="py-4 px-3 text-slate-400 font-mono text-xs">
+                                {% if patient.user %}{{ patient.user.email }}{% else %}N/A{% endif %}
+                            </td>
+                            <td class="py-4 px-3">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                    Active
+                                </span>
+                            </td>
+                            <!-- Assigned Patients Table - Action Column -->
+<td class="py-3 px-4">
+  <a href="{% url 'patient_detail' patient.id %}" 
+     class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 transition inline-block">
+    View Reports
+  </a>
+</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="py-12 text-center text-slate-500 text-sm">
+                                No registered patients found in database.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-</body>
-</html>
+        <!-- Right Side Widgets -->
+        <div class="space-y-6">
+            <!-- AI Alerts Feed -->
+            <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-xl">
+                <h2 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <span class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                    <span>AI Alerts Feed</span>
+                </h2>
+                
+                <div class="space-y-3">
+                    <div class="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs space-y-1">
+                        <div class="flex justify-between font-semibold text-red-400">
+                            <span>Tom Roy</span>
+                            <span class="text-slate-400">3h ago</span>
+                        </div>
+                        <p class="text-slate-300">Elevated Fasting Glucose (105 mg/dL) & HbA1c (5.9%).</p>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs space-y-1">
+                        <div class="flex justify-between font-semibold text-amber-400">
+                            <span>Tom Mathew</span>
+                            <span class="text-slate-400">5h ago</span>
+                        </div>
+                        <p class="text-slate-300">Borderline cholesterol flags detected.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedule Widget -->
+            <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-xl">
+                <h2 class="text-lg font-bold text-white">Weekly Schedule</h2>
+                <div class="text-center py-8 text-slate-500 text-xs border border-dashed border-slate-800 rounded-xl">
+                    📅 Interactive Schedule Widget
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Dynamic HTMX Modal Container Slot -->
+<div id="modalContainer"></div>
+
+{% endblock %}

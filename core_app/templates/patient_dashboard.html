@@ -8,14 +8,6 @@
   <!-- TOP HEADER / NAVBAR -->
   <header class="max-w-6xl mx-auto flex items-center justify-between pb-6 mb-8 border-b transition-colors"
           :class="theme === 'dark' ? 'border-slate-800' : 'border-slate-300'">
-    
-    <!-- BRAND LOGO -->
-    <a href="{% url 'home' %}" class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-lg shadow-lg shadow-cyan-500/10">
-        🛡️
-      </div>
-      <span class="text-xl font-extrabold tracking-wider uppercase">MediSense</span>
-    </a>
 
     <!-- RECORD ID & THEME TOGGLE -->
     <div class="flex items-center gap-4">
@@ -127,11 +119,11 @@
 
     </div>
 
-    <!-- DAILY VITALS INPUT & AI RISK ASSESSMENT (PHASE 1 CORE) -->
+    <!-- DAILY VITALS INPUT & AI RISK ASSESSMENT & PILL CHECKLIST GRID -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
       <!-- Vitals Input Form -->
-      <div class="md:col-span-2 p-6 rounded-3xl border transition-colors space-y-4"
+      <div class="p-6 rounded-3xl border transition-colors space-y-4"
            :class="theme === 'dark' ? 'bg-[#0a111e]/90 border-slate-800' : 'bg-white border-slate-200'">
         <div class="flex items-center justify-between border-b pb-3"
              :class="theme === 'dark' ? 'border-slate-800' : 'border-slate-200'">
@@ -144,7 +136,7 @@
 
         <form action="{% url 'log_vitals' %}" method="POST" class="space-y-4">
           {% csrf_token %}
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 gap-4">
             
             <!-- Blood Pressure -->
             <div>
@@ -160,20 +152,21 @@
               </div>
             </div>
 
-            <!-- Blood Glucose -->
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-1">Blood Glucose (mg/dL)</label>
-              <input type="number" step="0.1" name="blood_sugar" required placeholder="e.g. 105.0" 
-                     class="w-full text-xs rounded-xl px-3 py-2 border focus:outline-none focus:border-cyan-400 transition"
-                     :class="theme === 'dark' ? 'bg-slate-900/80 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900'">
-            </div>
+            <!-- Blood Glucose & Heart Rate -->
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Glucose (mg/dL)</label>
+                <input type="number" step="0.1" name="blood_sugar" required placeholder="e.g. 105.0" 
+                       class="w-full text-xs rounded-xl px-3 py-2 border focus:outline-none focus:border-cyan-400 transition"
+                       :class="theme === 'dark' ? 'bg-slate-900/80 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900'">
+              </div>
 
-            <!-- Heart Rate -->
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-1">Heart Rate (BPM)</label>
-              <input type="number" name="heart_rate" required placeholder="e.g. 72" 
-                     class="w-full text-xs rounded-xl px-3 py-2 border focus:outline-none focus:border-cyan-400 transition"
-                     :class="theme === 'dark' ? 'bg-slate-900/80 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900'">
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Heart Rate (BPM)</label>
+                <input type="number" name="heart_rate" required placeholder="e.g. 72" 
+                       class="w-full text-xs rounded-xl px-3 py-2 border focus:outline-none focus:border-cyan-400 transition"
+                       :class="theme === 'dark' ? 'bg-slate-900/80 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900'">
+              </div>
             </div>
 
             <!-- SpO2 -->
@@ -190,6 +183,64 @@
             Submit Daily Vitals & Generate AI Assessment
           </button>
         </form>
+      </div>
+
+      <!-- DAILY PILL CHECKLIST WIDGET -->
+      <div class="p-6 rounded-3xl border transition-colors flex flex-col justify-between"
+           :class="theme === 'dark' ? 'bg-[#0a111e]/90 border-slate-800' : 'bg-white border-slate-200'">
+        <div>
+          <div class="flex items-center justify-between border-b pb-3 mb-4"
+               :class="theme === 'dark' ? 'border-slate-800' : 'border-slate-200'">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-2">
+              <span>💊</span>
+              <span>Daily Pill Checklist</span>
+            </h3>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">Prescriptions</span>
+          </div>
+
+          <div class="space-y-3 max-h-64 overflow-y-auto pr-1">
+            {% if medications %}
+              {% for med in medications %}
+                <div class="p-3 rounded-2xl border flex items-center justify-between transition-all"
+                     :class="theme === 'dark' ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200'">
+                  <div>
+                    <p class="text-xs font-bold text-slate-200">{{ med.medicine_name }}</p>
+                    <p class="text-[10px] text-slate-400">{{ med.dosage }} • <span class="text-cyan-400">{{ med.timing }}</span></p>
+                  </div>
+
+                  <form action="{% url 'toggle_medication' med.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            class="px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all flex items-center gap-1
+                                   {% if med.is_taken_today %}
+                                     bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20
+                                   {% else %}
+                                     bg-cyan-400 text-slate-950 hover:bg-cyan-300 shadow-md shadow-cyan-500/10
+                                   {% endif %}">
+                      {% if med.is_taken_today %}
+                        <span>✓ Taken</span>
+                      {% else %}
+                        <span>Take Pill</span>
+                      {% endif %}
+                    </button>
+                  </form>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="p-6 text-center border border-dashed rounded-2xl text-xs text-slate-500 space-y-1"
+                   :class="theme === 'dark' ? 'border-slate-800' : 'border-slate-300'">
+                <p class="font-semibold text-slate-400">No Active Prescriptions</p>
+                <p class="text-[11px]">Your doctor has not added any medications yet.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="pt-3 border-t text-[10px] font-mono text-slate-500 flex justify-between"
+             :class="theme === 'dark' ? 'border-slate-800' : 'border-slate-200'">
+          <span>Status:</span>
+          <span>Updated Today</span>
+        </div>
       </div>
 
       <!-- AI Risk Evaluation Output -->
@@ -209,7 +260,7 @@
                      : '{% if eval.risk_level == "CRITICAL" or eval.risk_level == "HIGH" %}bg-rose-50 border-rose-200 text-rose-700{% elif eval.risk_level == "MODERATE" %}bg-amber-50 border-amber-200 text-amber-700{% else %}bg-emerald-50 border-emerald-200 text-emerald-700{% endif %}'">
                 
                 <div class="flex justify-between items-center font-bold text-xs">
-                  <span>Level: {{ eval.risk_level }}</span>
+                  <span>Level: {% if eval.risk_level == 'LOW' %}NORMAL{% else %}{{ eval.risk_level }}{% endif %}</span>
                   <span class="font-mono text-[10px] px-2 py-0.5 rounded border opacity-80">Score: {{ eval.risk_score }}</span>
                 </div>
 
@@ -235,6 +286,57 @@
         {% endif %}
       </div>
 
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VITALS HISTORICAL TRENDS CHART CARD (FULL ROW) -->
+    <!-- ========================================== -->
+    <div class="w-full p-6 md:p-8 rounded-3xl border transition-colors shadow-xl"
+         :class="theme === 'dark' ? 'bg-[#0a111e]/90 border-slate-800' : 'bg-white border-slate-200'"
+         hx-get="/api/vitals-history/"
+         hx-trigger="load, vitalsUpdated from:body"
+         hx-target="#chart-script-bridge"
+         hx-swap="innerHTML">
+
+      <!-- Header & Metric Toggle Buttons -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-2">
+            <span>📈</span>
+            <span>Vitals Historical Trends</span>
+          </h3>
+          <p class="text-xs text-slate-400">Visual trend analysis of daily physiological parameters over time</p>
+        </div>
+
+        <!-- Metric Selection Buttons -->
+        <div class="flex flex-wrap gap-2">
+          <button id="btn-bp" onclick="renderSelectedChart('bp')" 
+                  type="button"
+                  class="px-3 py-1.5 text-xs rounded-xl border transition-colors bg-cyan-400 text-slate-950 font-bold border-cyan-400">
+            Blood Pressure
+          </button>
+          
+          <button id="btn-glucose" onclick="renderSelectedChart('glucose')" 
+                  type="button"
+                  class="px-3 py-1.5 text-xs rounded-xl border transition-colors bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-800">
+            Glucose
+          </button>
+          
+          <button id="btn-hr" onclick="renderSelectedChart('hr')" 
+                  type="button"
+                  class="px-3 py-1.5 text-xs rounded-xl border transition-colors bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-800">
+            Heart Rate & SpO2
+          </button>
+        </div>
+      </div>
+
+      <!-- Responsive Chart Canvas Container -->
+      <div class="relative w-full h-72">
+        <canvas id="vitalsChartCanvas"></canvas>
+      </div>
+
+      <!-- Hidden Bridge for HTMX Response Execution -->
+      <div id="chart-script-bridge" class="hidden"></div>
     </div>
 
     <!-- QUICK ACTIONS & LAB REPORT SECTION -->
@@ -304,4 +406,101 @@
 
   </main>
 </div>
+
+<!-- ========================================== -->
+<!-- CHART.JS INTEGRATION SCRIPT               -->
+<!-- ========================================== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// 1. Global Variables & Data Setup
+let vitalsChartInstance = null;
+let activeMetric = 'bp';
+
+const vitalsData = {
+    labels: ['Aug 03, 23:14', 'Aug 04, 11:08'],
+    systolic: [110, 140],
+    diastolic: [76, 85],
+    glucose: [103, 105],
+    hr: [72, 72],
+    spo2: [96.5, 76.3]
+};
+
+// 2. DOM Load ആകുമ്പോൾ Chart Init ചെയ്യുക
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('vitalsChartCanvas').getContext('2d');
+    
+    vitalsChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { labels: [], datasets: [] },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#94a3b8' } } },
+            scales: {
+                x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(30, 41, 59, 0.5)' } },
+                y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(30, 41, 59, 0.5)' } }
+            }
+        }
+    });
+
+    // initial Chart Rendering (Blood Pressure)
+    renderSelectedChart('bp');
+});
+
+// 3. Chart Update Function
+function renderSelectedChart(metric) {
+    if (!vitalsChartInstance) return;
+    
+    activeMetric = metric;
+    let datasets = [];
+
+    if (metric === 'bp') {
+        datasets = [
+            { label: 'Systolic (mmHg)', data: vitalsData.systolic, borderColor: '#06b6d4', backgroundColor: 'rgba(6, 182, 212, 0.1)', tension: 0.3, fill: true },
+            { label: 'Diastolic (mmHg)', data: vitalsData.diastolic, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', tension: 0.3, fill: true }
+        ];
+    } else if (metric === 'glucose') {
+        datasets = [
+            { label: 'Blood Glucose (mg/dL)', data: vitalsData.glucose, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.3, fill: true }
+        ];
+    } else if (metric === 'hr') {
+        datasets = [
+            { label: 'Heart Rate (BPM)', data: vitalsData.hr, borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', tension: 0.3, fill: true },
+            { label: 'SpO2 (%)', data: vitalsData.spo2, borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.1)', tension: 0.3, fill: true }
+        ];
+    }
+
+    vitalsChartInstance.data.labels = vitalsData.labels;
+    vitalsChartInstance.data.datasets = datasets;
+    vitalsChartInstance.update(); 
+
+    // Button UI Focus Styling update
+    updateButtonStyles(metric);
+}
+
+// 4. Button Highlight Styling
+function updateButtonStyles(metric) {
+    const btnBp = document.getElementById('btn-bp');
+    const btnGlucose = document.getElementById('btn-glucose');
+    const btnHr = document.getElementById('btn-hr');
+
+    const activeClass = "px-3 py-1.5 text-xs rounded-xl border transition-colors bg-cyan-400 text-slate-950 font-bold border-cyan-400";
+    const inactiveClass = "px-3 py-1.5 text-xs rounded-xl border transition-colors bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-800";
+
+    if (btnBp) btnBp.className = metric === 'bp' ? activeClass : inactiveClass;
+    if (btnGlucose) btnGlucose.className = metric === 'glucose' ? activeClass : inactiveClass;
+    if (btnHr) btnHr.className = metric === 'hr' ? activeClass : inactiveClass;
+}
+
+window.updateVitalsChart = function(newData) {
+    vitalsData.labels = newData.labels;
+    vitalsData.systolic = newData.systolic;
+    vitalsData.diastolic = newData.diastolic;
+    vitalsData.glucose = newData.glucose;
+    vitalsData.hr = newData.hr;
+    vitalsData.spo2 = newData.spo2;
+    renderSelectedChart(activeMetric);
+};
+</script>
 {% endblock %}

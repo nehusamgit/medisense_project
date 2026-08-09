@@ -1,9 +1,13 @@
 import re
+from django.shortcuts import render, get_object_or_404
 from django.shortcuts import render, redirect
+from django.http import HttpResponse, Http404
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Patient, DoctorProfile, PatientVital, AIRiskAssessment
+from .models import Patient, DoctorProfile, PatientVital, AIRiskAssessment, Medication
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate, login
 
 
@@ -126,48 +130,72 @@ def login_view(request):
 
 @login_required
 def admin_dashboard(request):
-    """Admin portal to monitor platform metrics and system overview."""
     if not request.user.is_superuser and not request.user.is_staff:
-        messages.error(request, "Access restricted to Administrators only.")
         return redirect('login')
 
-    total_patients = Patient.objects.count()
-    total_doctors = DoctorProfile.objects.count()
-    total_users = User.objects.count()
+    role = request.GET.get('role', 'all')
+    users = User.objects.all().order_by('-date_joined')
+
+    # Filtering Logic based on top tab selection
+    if role == 'doctor':
+        users = users.filter(is_staff=True) # അല്ലെങ്കിൽ Doctor role condition
+    elif role == 'patient':
+        users = users.filter(is_staff=False)
 
     context = {
-        'total_patients': total_patients,
-        'total_doctors': total_doctors,
-        'total_users': total_users,
-        'recent_users': User.objects.order_by('-date_joined')[:5],
+        'users': users,
+        'total_users': User.objects.count(),
+        'active_doctors': User.objects.filter(is_staff=True).count(),
+        'active_patients': User.objects.filter(is_staff=False).count(),
     }
+
+    if request.headers.get('HX-Request'):
+        return render(request, 'partials/admin_user_list.html', context)
+
     return render(request, 'admin_dashboard.html', context)
 
+@login_required
+@csrf_exempt
+def delete_user(request, user_id):
+    if request.method == 'POST':
+        if request.user.id == user_id:
+            return HttpResponse(status=400)
+
+        user_to_delete = get_object_or_404(User, id=user_id)
+        
+        # 1. Soft Delete (This bypasses all DB FK Constraint/Cascade errors)
+        user_to_delete.is_active = False
+        user_to_delete.save()
+
+        # 2. Return 200 OK with empty response so HTMX instantly removes the row from DOM
+        return HttpResponse("", status=200)
+
+    return HttpResponse(status=400)
 
 @login_required
-def patient_dashboard(request):
-    # Safely get or create the Patient profile
-    patient_profile, _ = Patient.objects.get_or_create(
-        user=request.user,
-        defaults={'name': request.user.get_full_name() or request.user.username, 'age': 30}
-    )
+def patient_dashboard_view(request):
+    try:
+        patient_profile = Patient.objects.get(user=request.user)
+    except Patient.DoesNotExist:
+        patient_profile = None
 
-    ai_insight = request.session.get('latest_ai_insight', None)
-    
-    # Fetch recent vitals & latest AI assessment
-    recent_vitals = PatientVital.objects.filter(patient=patient_profile).order_by('-logged_at')[:5]
-    latest_vital = recent_vitals.first()
+    latest_vital = None
+    medications = []
+
+    if patient_profile:
+        latest_vital = PatientVital.objects.filter(patient=patient_profile).order_by('-logged_at').first()
+        medications = Medication.objects.filter(patient=patient_profile).order_by('-created_at')
 
     context = {
-        'ai_insight': ai_insight,
-        'recent_vitals': recent_vitals,
+        'patient': patient_profile,
         'latest_vital': latest_vital,
+        'medications': medications,
     }
     return render(request, 'patient_dashboard.html', context)
 
 @login_required
 def log_vitals_view(request):
-    """Logs patient clinical parameters and generates immediate AI Risk Score."""
+    """Logs patient clinical parameters and generates dynamic AI Risk Score."""
     if request.method == 'POST':
         try:
             # Safely get or create the patient profile
@@ -193,21 +221,48 @@ def log_vitals_view(request):
             )
 
             # 2. Rule-Based AI Risk Scoring Pipeline
-            risk_score = 0.15
-            risk_level = 'LOW'
-            condition = 'Normal Vitals'
-            recommendation = 'Maintain regular diet, hydration, and daily medication schedule.'
+            critical_conditions = []
+            moderate_conditions = []
 
-            if sys_bp > 140 or sugar > 180 or spo2 < 93:
+            # --- Critical Checks (High & Low Risks) ---
+            if sys_bp > 140 or dia_bp > 90:
+                critical_conditions.append('Hypertension')
+            elif sys_bp < 90 or dia_bp < 60:
+                critical_conditions.append('Hypotension (Low BP)')
+
+            if sugar > 180:
+                critical_conditions.append('Hyperglycemia')
+            elif sugar < 70:
+                critical_conditions.append('Hypoglycemia (Low Sugar)')
+
+            if spo2 < 93:
+                critical_conditions.append('Hypoxia (Low Oxygen)')
+
+            # --- Moderate Checks ---
+            if not critical_conditions:
+                if 130 <= sys_bp <= 140 or 80 <= dia_bp <= 90:
+                    moderate_conditions.append('Elevated Blood Pressure')
+                if 120 <= sugar <= 180:
+                    moderate_conditions.append('Elevated Blood Sugar')
+                if 93 <= spo2 <= 95:
+                    moderate_conditions.append('Borderline Oxygen Level')
+
+            # --- Evaluate Overall Risk Level & Message ---
+            if critical_conditions:
                 risk_score = 0.88
                 risk_level = 'CRITICAL'
-                condition = 'Hypertension & Hyperglycemia Risk'
+                condition = ' & '.join(critical_conditions) + ' Risk'
                 recommendation = 'Critical vitals detected. Immediate clinical review required.'
-            elif sys_bp > 130 or sugar > 120:
+            elif moderate_conditions:
                 risk_score = 0.55
                 risk_level = 'MODERATE'
-                condition = 'Elevated Blood Pressure / Sugar'
+                condition = ' & '.join(moderate_conditions)
                 recommendation = 'Monitor vitals closely over the next 24 hours.'
+            else:
+                risk_score = 0.15
+                risk_level = 'NORMAL'  # LOW മാറ്റി NORMAL ആക്കി
+                condition = 'Normal Vitals'
+                recommendation = 'Maintain regular diet, hydration, and daily medication schedule.'
 
             # 3. Save AI Risk Assessment
             AIRiskAssessment.objects.create(
@@ -234,12 +289,20 @@ def doctor_dashboard(request):
     context = {
         'patients': patients,
         'total_patients_count': total_patients_count,
+        
     }
     return render(request, 'doctor_dashboard.html', context)
+
+@login_required
+def patient_modal(request, patient_id):
+    patient = get_object_or_404(Patient, id=patient_id)
+    return render(request, 'partials/patient_modal_partial.html', {'patient': patient})
 
 
 def home_view(request):
     return render(request, 'home.html')
+
+
 
 
 @login_required
@@ -282,3 +345,75 @@ def upload_report_view(request):
 
     return redirect('patient_dashboard')
 
+@login_required
+def vitals_history_api(request):
+
+    try:
+        patient = Patient.objects.get(user=request.user)
+        
+        vitals_qs = PatientVital.objects.filter(patient=patient).order_by('-logged_at')[:10]
+        vitals = reversed(list(vitals_qs)) 
+
+        data = {
+            'labels': [v.logged_at.strftime('%b %d, %H:%M') for v in vitals],
+            'systolic': [v.systolic_bp for v in vitals],
+            'diastolic': [v.diastolic_bp for v in vitals],
+            'glucose': [v.blood_sugar for v in vitals],
+            'hr': [v.heart_rate for v in vitals],
+            'spo2': [v.spo2_level for v in vitals],
+        }
+    except Patient.DoesNotExist:
+        data = {'labels': [], 'systolic': [], 'diastolic': [], 'glucose': [], 'hr': [], 'spo2': []}
+
+    script_response = f"""
+    <script>
+        if (window.updateVitalsChart) {{
+            window.updateVitalsChart({json.dumps(data)});
+        }}
+    </script>
+    """
+    return HttpResponse(script_response)
+
+@login_required
+def patient_detail_view(request, patient_id):
+    patient = get_object_or_404(Patient, id=patient_id)
+    latest_vital = PatientVital.objects.filter(patient=patient).order_by('-logged_at').first()
+    
+    context = {
+        'patient': patient,
+        'latest_vital': latest_vital,
+    }
+    return render(request, 'patient_detail.html', context)
+    
+@login_required
+def add_medication_view(request, patient_id):
+    if request.method == 'POST':
+        patient = get_object_or_404(Patient, id=patient_id)
+        med_name = request.POST.get('medicine_name', '').strip()
+        dosage = request.POST.get('dosage', '').strip()
+        timing = request.POST.get('timing', 'Morning')
+
+        if med_name and dosage:
+            Medication.objects.create(
+                patient=patient,
+                prescribed_by=request.user,
+                medicine_name=med_name,
+                dosage=dosage,
+                timing=timing
+            )
+            messages.success(request, f"Prescription added for {patient.name}!")
+        else:
+            messages.error(request, "Please fill in all medication details.")
+
+    return redirect('patient_detail', patient_id=patient_id)
+
+
+@login_required
+def toggle_medication_view(request, med_id):
+    if request.method == 'POST':
+        medication = get_object_or_404(Medication, id=med_id, patient__user=request.user)
+        medication.is_taken_today = not medication.is_taken_today
+        medication.save()
+        messages.success(request, "Medication status updated!")
+
+    return redirect('patient_dashboard')    
