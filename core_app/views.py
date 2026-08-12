@@ -4,11 +4,12 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Patient, DoctorProfile, PatientVital, AIRiskAssessment, Medication
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate, login
+from django.utils import timezone
+from .models import Patient, DoctorProfile, PatientVital, AIRiskAssessment, Medication, Appointment
 
 
 def register_view(request):
@@ -128,6 +129,34 @@ def login_view(request):
 
     return render(request, 'login.html')
 
+def simple_password_reset_view(request):
+    if request.method == 'POST':
+        identifier = request.POST.get('username_or_email', '').strip()
+        new_password = request.POST.get('new_password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
+
+        if not identifier or not new_password:
+            messages.error(request, "All fields are required!")
+            return render(request, 'simple_password_reset.html')
+
+        if new_password != confirm_password:
+            messages.error(request, "Passwords do not match!")
+            return render(request, 'simple_password_reset.html')
+
+        user = User.objects.filter(username__iexact=identifier).first()
+        if not user:
+            user = User.objects.filter(email__iexact=identifier).first()
+
+        if user:
+            user.set_password(new_password)
+            user.save()
+            messages.success(request, f"Password updated for user '{user.username}'! Please log in.")
+            return redirect('login')
+        else:
+            messages.error(request, "No account found with this Username or Email.")
+
+    return render(request, 'simple_password_reset.html')
+
 @login_required
 def admin_dashboard(request):
     if not request.user.is_superuser and not request.user.is_staff:
@@ -181,15 +210,29 @@ def patient_dashboard_view(request):
 
     latest_vital = None
     medications = []
+    upcoming_appointments = []
+    adherence_rate = 0
 
     if patient_profile:
         latest_vital = PatientVital.objects.filter(patient=patient_profile).order_by('-logged_at').first()
         medications = Medication.objects.filter(patient=patient_profile).order_by('-created_at')
+        upcoming_appointments = Appointment.objects.filter(
+            patient=patient_profile,
+            status='SCHEDULED'
+        ).order_by('scheduled_date', 'scheduled_time')
+
+        # Adherence Rate Calculation
+        total_meds = medications.count()
+        if total_meds > 0:
+            taken_count = medications.filter(is_taken_today=True).count()
+            adherence_rate = round((taken_count / total_meds) * 100)
 
     context = {
         'patient': patient_profile,
         'latest_vital': latest_vital,
         'medications': medications,
+        'upcoming_appointments': upcoming_appointments,
+        'adherence_rate': adherence_rate,
     }
     return render(request, 'patient_dashboard.html', context)
 
@@ -285,11 +328,21 @@ def log_vitals_view(request):
 def doctor_dashboard(request):
     patients = Patient.objects.all().select_related('user')
     total_patients_count = patients.count()
-    
+
+    try:
+        doctor_profile = DoctorProfile.objects.get(user=request.user)
+        appointments = Appointment.objects.filter(
+            doctor=doctor_profile, 
+            status='SCHEDULED'
+        ).order_by('scheduled_date', 'scheduled_time')
+    except DoctorProfile.DoesNotExist:
+        doctor_profile = None
+        appointments = []
+
     context = {
         'patients': patients,
         'total_patients_count': total_patients_count,
-        
+        'appointments': appointments,
     }
     return render(request, 'doctor_dashboard.html', context)
 
@@ -396,7 +449,6 @@ def add_medication_view(request, patient_id):
         if med_name and dosage:
             Medication.objects.create(
                 patient=patient,
-                prescribed_by=request.user,
                 medicine_name=med_name,
                 dosage=dosage,
                 timing=timing
@@ -410,10 +462,39 @@ def add_medication_view(request, patient_id):
 
 @login_required
 def toggle_medication_view(request, med_id):
-    if request.method == 'POST':
-        medication = get_object_or_404(Medication, id=med_id, patient__user=request.user)
-        medication.is_taken_today = not medication.is_taken_today
-        medication.save()
-        messages.success(request, "Medication status updated!")
+    medication = get_object_or_404(Medication, id=med_id)
+    today = timezone.now().date()
 
+    if not medication.is_taken_today or medication.last_taken_date != today:
+        medication.is_taken_today = True
+        medication.last_taken_date = today
+    else:
+        medication.is_taken_today = False
+
+    medication.save()
     return redirect('patient_dashboard')    
+
+@login_required
+def create_appointment_view(request, patient_id):
+    patient = get_object_or_404(Patient, id=patient_id)
+    # Get doctor profile associated with logged in user
+    doctor = get_object_or_404(DoctorProfile, user=request.user)
+
+    if request.method == 'POST':
+        scheduled_date = request.POST.get('scheduled_date')
+        scheduled_time = request.POST.get('scheduled_time')
+        appointment_type = request.POST.get('appointment_type')
+        reason = request.POST.get('reason')
+
+        Appointment.objects.create(
+            doctor=doctor,
+            patient=patient,
+            scheduled_date=scheduled_date,
+            scheduled_time=scheduled_time,
+            appointment_type=appointment_type,
+            reason=reason
+        )
+        messages.success(request, f"Appointment scheduled for {patient.user.username} successfully!")
+        return redirect('patient_detail', patient_id=patient.id)
+
+    return redirect('patient_detail', patient_id=patient.id)

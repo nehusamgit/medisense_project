@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import User
 
 # 1. Doctor Profile Table
@@ -67,13 +68,43 @@ class AIRiskAssessment(models.Model):
         return f"{self.vital.patient.name} - {self.risk_level} ({self.risk_score})"
 
 class Medication(models.Model):
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='medications')
-    prescribed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    medicine_name = models.CharField(max_length=150)
+    patient = models.ForeignKey('Patient', on_delete=models.CASCADE, related_name='medications')
+    prescribed_by = models.ForeignKey(DoctorProfile, on_delete=models.SET_NULL, null=True, blank=True)
+    medicine_name = models.CharField(max_length=100)
     dosage = models.CharField(max_length=50)
     timing = models.CharField(max_length=50)
     is_taken_today = models.BooleanField(default=False)
+    last_taken_date = models.DateField(null=True, blank=True) 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.medicine_name} - {self.patient.name}"
+        return f"{self.medicine_name} - {self.patient.user.username}"
+
+
+class Appointment(models.Model):
+    STATUS_CHOICES = [
+        ('SCHEDULED', 'Scheduled'),
+        ('COMPLETED', 'Completed'),
+        ('CANCELLED', 'Cancelled'),
+    ]
+
+    TYPE_CHOICES = [
+        ('ROUTINE', 'Routine Checkup'),
+        ('CRITICAL', 'Critical Follow-up'),
+    ]
+
+    # Note: Foreign key names match your project setup (Doctor Profile & Patient Profile)
+    doctor = models.ForeignKey('DoctorProfile', on_delete=models.CASCADE, related_name='appointments')
+    patient = models.ForeignKey('Patient', on_delete=models.CASCADE, related_name='appointments')
+    scheduled_date = models.DateField()
+    scheduled_time = models.TimeField()
+    appointment_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='ROUTINE')
+    reason = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='SCHEDULED')
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['scheduled_date', 'scheduled_time']
+
+    def __str__(self):
+        return f"{self.get_appointment_type_display()} - {self.patient.user.username} on {self.scheduled_date}"
