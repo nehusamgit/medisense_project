@@ -3,6 +3,31 @@
 {% block content %}
 <main class="w-full max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8">
     
+    <!-- Live Emergency SOS Container -->
+    <div id="emergency-sos-banner" 
+         hx-get="{% url 'check_emergencies' %}" 
+         hx-trigger="load, every 3s" 
+         hx-swap="innerHTML">
+        {% if active_sos_alerts %}
+            {% for alert in active_sos_alerts %}
+            <div id="alert-card-{{ alert.id }}" class="mb-4 p-4 bg-red-600/20 border-2 border-red-500 rounded-2xl flex items-center justify-between shadow-lg shadow-red-500/20">
+                <div class="flex items-center space-x-3">
+                    <span class="text-3xl animate-bounce">🚨</span>
+                    <div>
+                        <h4 class="font-extrabold text-red-400 text-sm uppercase tracking-wide">EMERGENCY SOS ALERT!</h4>
+                        <p class="text-xs text-white font-medium">{{ alert.message }}</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">{{ alert.created_at|date:"b d, Y - h:i A" }}</p>
+                    </div>
+                </div>
+                <button onclick="resolveSosAlert({{ alert.id }})" 
+                        class="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs transition shadow-md cursor-pointer">
+                    Acknowledge & Resolve
+                </button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
     <!-- Header & Action Row -->
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-slate-800/80 pb-6">
         <div>
@@ -49,7 +74,7 @@
         <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md p-5 rounded-2xl flex justify-between items-center shadow-lg">
             <div>
                 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Patients</p>
-                <p class="text-2xl font-bold text-white mt-1">{{ total_patients_count|default:"0" }}</p>
+                <p class="text-2xl font-bold text-white mt-1">{% if patients %}{{ patients|length }}{% else %}0{% endif %}</p>
             </div>
             <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
@@ -82,7 +107,7 @@
                 <p class="text-2xl font-bold text-cyan-400 mt-1">3</p>
             </div>
             <div class="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl border border-cyan-500/20">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
         </div>
     </div>
@@ -90,14 +115,15 @@
     <!-- Workspace Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         
-        <!-- Patient Table (HTMX Dynamic Update Container) -->
+        <!-- Patient Table Container -->
         <div class="lg:col-span-2 bg-slate-900/60 border border-slate-800 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-xl">
+            <!-- ASSIGNED PATIENTS HEADER -->
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                <h2 class="text-lg font-bold text-white">Assigned Patients</h2>
-                <span class="text-xs bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/20 flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                    HTMX Live List
-                </span>
+                <h2 class="text-base font-bold text-white">Assigned Patients</h2>
+                <a href="{% url 'add_patient' %}" 
+                   class="px-3.5 py-1.5 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md shadow-cyan-500/20">
+                    <span>+</span> Add Patient
+                </a>
             </div>
 
             <div class="overflow-x-auto">
@@ -136,11 +162,10 @@
                                 {% if patient.user %}{{ patient.user.email }}{% else %}N/A{% endif %}
                             </td>
                             <td class="py-4 px-3">
-                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                    Active
-                                </span>
+                                <button onclick="toggleStatus(this)" class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-900 transition">
+                                  Active
+                                </button>
                             </td>
-                            <!-- Assigned Patients Table - Action Column -->
                             <td class="py-3 px-4 text-center">
                               <a href="{% url 'patient_detail' patient.id %}" 
                                  class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 transition inline-block">
@@ -162,7 +187,7 @@
 
         <!-- Right Side Widgets -->
         <div class="space-y-6">
-            <!-- AI Alerts Feed -->
+            <!-- AI Alerts Feed >
             <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-xl">
                 <h2 class="text-lg font-bold text-white flex items-center space-x-2">
                     <span class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
@@ -186,53 +211,43 @@
                         <p class="text-slate-300">Borderline cholesterol flags detected.</p>
                     </div>
                 </div>
-            </div>
+            </div-->
 
-            <!-- Dynamic Weekly Schedule Widget -->
-            <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-xl">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                        <span>🗓️</span>
-                        <span>Weekly Schedule</span>
-                    </h2>
-                    <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-slate-400">
-                        {{ appointments|length }} Booked
-                    </span>
+            <!-- Weekly Schedule Container -->
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">📅</span>
+                        <h3 class="font-bold text-white text-lg">Weekly Schedule</h3>
+                    </div>
+                    <button onclick="openScheduleModal()" class="px-3 py-1 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black rounded-lg transition">
+                        + Schedule
+                    </button>
                 </div>
 
-                <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
-                    {% if appointments %}
-                        {% for appt in appointments %}
-                            <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-800/80 hover:border-slate-700 transition flex items-center justify-between">
+                <div id="scheduleListContainer" class="space-y-3">
+                    {% if weekly_schedules %}
+                        {% for item in weekly_schedules %}
+                            <div class="p-3 bg-gray-800/60 border border-gray-700/50 rounded-xl flex justify-between items-center text-sm">
                                 <div>
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="text-xs font-semibold text-slate-200">
-                                            {% if appt.patient.user %}{{ appt.patient.user.get_full_name|default:appt.patient.user.username }}{% else %}{{ appt.patient.name }}{% endif %}
-                                        </span>
-                                        
-                                        {% if appt.appointment_type == 'CRITICAL' %}
-                                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/30">
-                                                CRITICAL
-                                            </span>
+                                    <div class="font-bold text-white">
+                                        {% if item.patient.user %}
+                                            {{ item.patient.user.get_full_name|default:item.patient.user.username }}
                                         {% else %}
-                                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
-                                                ROUTINE
-                                            </span>
+                                            {{ item.patient.name }}
                                         {% endif %}
                                     </div>
-                                    <p class="text-[11px] text-slate-400">{{ appt.reason|default:"General Clinical Checkup" }}</p>
+                                    <div class="text-xs text-gray-400">{{ item.scheduled_date|date:"b d" }}, {{ item.scheduled_time|time:"H:i" }} • {{ item.appointment_type }}</div>
                                 </div>
-
-                                <div class="text-right">
-                                    <p class="text-xs font-mono font-bold text-cyan-400">{{ appt.scheduled_time|time:"H:i" }}</p>
-                                    <p class="text-[10px] text-slate-500 font-mono">{{ appt.scheduled_date|date:"M d" }}</p>
-                                </div>
+                                <span class="px-2.5 py-1 text-xs bg-blue-950 text-blue-300 border border-blue-500/30 rounded-lg">
+                                    {{ item.status|default:"Confirmed" }}
+                                </span>
                             </div>
                         {% endfor %}
                     {% else %}
-                        <div class="py-8 text-center border border-dashed border-slate-800 rounded-xl space-y-1">
-                            <p class="text-xs font-semibold text-slate-400">No Scheduled Consultations</p>
-                            <p class="text-[11px] text-slate-500">Scheduled follow-ups with patients will appear here.</p>
+                        <div id="emptyScheduleMsg" class="text-center py-6 text-gray-500 text-sm">
+                            No Scheduled Consultations<br>
+                            <span class="text-xs text-gray-600">Scheduled follow-ups with patients will appear here.</span>
                         </div>
                     {% endif %}
                 </div>
@@ -241,7 +256,106 @@
     </div>
 </main>
 
-<!-- Dynamic HTMX Modal Container Slot -->
-<div id="modalContainer"></div>
+<!-- Schedule Consultation Modal (POST Action Connected to Database) -->
+<div id="scheduleModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-gray-900 border border-gray-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+        <button onclick="closeScheduleModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white font-bold text-xl">&times;</button>
+        <h3 class="text-lg font-bold text-white mb-4">Schedule Consultation</h3>
+        
+        <form method="POST" action="{% url 'schedule_appointment' %}" class="space-y-4 text-sm">
+            {% csrf_token %}
+            <div>
+                <label class="block text-gray-400 mb-1">Select Patient</label>
+                <select name="patient_id" required class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+                    <option value="" disabled selected>Select a patient</option>
+                    {% for patient in patients %}
+                        <option value="{{ patient.id }}">
+                            {% if patient.user %}
+                                {{ patient.user.get_full_name|default:patient.user.username }}
+                            {% else %}
+                                {{ patient.name }}
+                            {% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-gray-400 mb-1">Select Date</label>
+                    <input type="date" name="scheduled_date" required class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500 [color-scheme:dark]">
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">Select Time</label>
+                    <input type="time" name="scheduled_time" required class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500 [color-scheme:dark]">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-gray-400 mb-1">Consultation Type</label>
+                <select name="appointment_type" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+                    <option value="Follow-up">Follow-up Checkup</option>
+                    <option value="Lab Review">Lab Report Review</option>
+                    <option value="General Consultation">General Consultation</option>
+                </select>
+            </div>
+            <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-2.5 rounded-xl transition">Confirm Schedule</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const searchInput = document.querySelector('input[placeholder*="Search"]');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('table tbody tr'); 
+            
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+    }
+});
+
+function toggleStatus(btn) {
+    if (btn.innerText.trim() === 'Active') {
+        btn.innerText = 'Discharged';
+        btn.className = 'px-3 py-1 text-xs font-semibold rounded-full bg-gray-800 text-gray-400 border border-gray-600';
+    } else {
+        btn.innerText = 'Active';
+        btn.className = 'px-3 py-1 text-xs font-semibold rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-500/30';
+    }
+}
+
+function openScheduleModal() {
+    document.getElementById('scheduleModal').classList.remove('hidden');
+}
+
+function closeScheduleModal() {
+    document.getElementById('scheduleModal').classList.add('hidden');
+}
+
+function resolveSosAlert(alertId) {
+    fetch(`/resolve-alert/${alertId}/`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const card = document.getElementById(`alert-card-${alertId}`);
+            if (card) {
+                card.remove();
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
 
 {% endblock %}

@@ -1,0 +1,28 @@
+<div class="bg-rose-950/90 border border-rose-500/60 text-white p-4 rounded-2xl mb-6 flex items-center justify-between shadow-lg shadow-rose-950/50 backdrop-blur-md">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-xl animate-pulse">
+      🚨
+    </div>
+    <div>
+      <h4 class="font-bold text-xs uppercase tracking-wider text-rose-300">Emergency Alert Detected</h4>
+      {% for alert in alerts %}
+        <p class="text-xs font-medium text-slate-200 mt-0.5">
+          {{ alert.message }} <span class="text-slate-400 text-[10px]">({{ alert.created_at|date:"h:i A" }})</span>
+        </p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="flex items-center gap-2">
+    {% for alert in alerts %}
+      <a href="{% url 'resolve_alert' alert.id %}" 
+         class="px-3 py-1.5 bg-rose-500 hover:bg-rose-400 text-slate-950 text-xs font-bold rounded-xl transition">
+        Acknowledge & Dismiss
+      </a>
+    {% endfor %}
+  </div>
+
+  <audio autoplay loop id="med-beep">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+  </audio>
+</div>

@@ -14,6 +14,7 @@ class DoctorProfile(models.Model):
 # 2. Patient Table (Doctors can add patients)
 class Patient(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, related_name='patient_profile')
+    doctor = models.ForeignKey(DoctorProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_patients')
     name = models.CharField(max_length=100)
     age = models.PositiveIntegerField() # Mandatory field
     phone = models.CharField(max_length=15, blank=True)
@@ -108,3 +109,30 @@ class Appointment(models.Model):
 
     def __str__(self):
         return f"{self.get_appointment_type_display()} - {self.patient.user.username} on {self.scheduled_date}"
+
+class EmergencyAlert(models.Model):
+    ALERT_TYPES = (
+        ('SOS', 'Manual SOS Button'),
+        ('CRITICAL_VITALS', 'Critical Vitals Threshold'),
+    )
+
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='alerts')
+    doctor = models.ForeignKey(DoctorProfile, on_delete=models.CASCADE, related_name='alerts')
+    alert_type = models.CharField(max_length=20, choices=ALERT_TYPES, default='SOS')
+    message = models.TextField()
+    is_resolved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.alert_type} - {self.patient.name}"
+
+class DiagnosticReport(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='diagnostic_reports')
+    report_file = models.FileField(upload_to='diagnostic_reports/')
+    summary = models.TextField()
+    status_flag = models.CharField(max_length=50, default='Document Insights Normal')
+    flagged_data = models.JSONField(default=list, blank=True) # Metrics like Glucose, Cholesterol
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.patient.name} - Report ({self.created_at.strftime('%Y-%m-%d')})"
