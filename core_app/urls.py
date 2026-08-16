@@ -24,6 +24,6 @@ urlpatterns = [
     path('trigger-sos/', views.trigger_sos_alert, name='trigger_sos_alert'),
     path('check-emergencies/', views.check_emergencies, name='check_emergencies'),
     path('resolve-alert/<int:alert_id>/', views.resolve_alert, name='resolve_alert'),
-    path('send-whatsapp/', views.send_whatsapp_reminder, name='send_whatsapp_reminder'),
+    
     
 ]

@@ -632,20 +632,3 @@ def resolve_alert(request, alert_id):
     alert.save()
     return JsonResponse({'status': 'success', 'alert_id': alert_id})
 
-def send_whatsapp_reminder(request):
-    account_sid = 'ACab46dc04fb2feef7b1390eb4d6b1c038'
-    auth_token = 'a7fb0b98006ed6049e5c991eb734dbb4'  
-    
-    client = Client(account_sid, auth_token)
-
-    try:
-        message = client.messages.create(
-            from_='whatsapp:+17372212163',
-            body='Your MediSense appointment/pill reminder is ready!',
-            to='whatsapp:+916238628247'
-        )
-        messages.success(request, "WhatsApp reminder sent successfully!")
-    except Exception as e:
-        messages.error(request, f"Error sending message: {e}")
-
-    return redirect(request.META.get('HTTP_REFERER', '/'))
