@@ -13,7 +13,7 @@
     <div class="flex items-center gap-4">
       <div class="hidden sm:flex items-center gap-2 text-xs font-mono tracking-widest uppercase"
            :class="theme === 'dark' ? 'text-slate-400' : 'text-slate-600'">
-        <span>RECORD #MSN-2026-0847</span>
+        <span></span>
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
       </div>
 
@@ -102,9 +102,15 @@
             </div>
 
             <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Email Address</p>
-              <p class="text-sm font-semibold">{{ request.user.email|default:"patient@email.com" }}</p>
-            </div>
+  <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">EMAIL ADDRESS</p>
+  <p class="text-sm font-semibold text-white mt-1">
+    {% if patient.doctor and patient.doctor.user.email %}
+       {{ patient.doctor.user.email }}
+    {% else %}
+       <span class="text-slate-500 font-normal">N/A</span>
+    {% endif %}
+  </p>
+</div>
           </div>
 
         </div>
@@ -548,9 +554,18 @@ function initChart(data) {
                 legend: { labels: { color: '#9ca3af' } }
             },
             scales: {
-                x: { ticks: { color: '#9ca3af' }, grid: { color: '#1f2937' } },
-                y: { ticks: { color: '#9ca3af' }, grid: { color: '#1f2937' } }
+    x: { 
+        ticks: { 
+            color: '#9ca3af',
+            callback: function(value, index, ticks) {
+                let label = this.getLabelForValue(value);
+                return label ? label.split(',')[0] : label;
             }
+        }, 
+        grid: { color: '#1f2937' } 
+    },
+    y: { ticks: { color: '#9ca3af' }, grid: { color: '#1f2937' } }
+}
         }
     });
 }

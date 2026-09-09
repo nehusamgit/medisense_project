@@ -20,12 +20,14 @@ def register_view(request):
         email = request.POST.get('email', '').strip()
         full_name = request.POST.get('first_name', '').strip()
         age_str = request.POST.get('age', '').strip()
+        phone = request.POST.get('phone', '').strip() 
         password = request.POST.get('password', '')
         confirm_password = request.POST.get('confirm_password', '')
         role = request.POST.get('role', 'patient')
         report_file = request.FILES.get('report_file')
 
-        if not all([username, email, full_name, age_str, password, confirm_password]):
+        
+        if not all([username, email, full_name, age_str, phone, password, confirm_password]):
             messages.error(request, "Please enter all required fields.")
             return render(request, 'register.html')
 
@@ -80,7 +82,14 @@ def register_view(request):
             if role == 'doctor':
                 DoctorProfile.objects.create(user=user, age=age)
             else:
-                Patient.objects.create(user=user, name=full_name, age=age)
+                
+                Patient.objects.create(
+                    user=user, 
+                    name=full_name, 
+                    age=age, 
+                    phone=phone
+                )
+                
                 if report_file:
                     MedicalReport.objects.create(
                         user=user,
@@ -96,7 +105,6 @@ def register_view(request):
             return render(request, 'register.html')
 
     return render(request, 'register.html')
-
 
 def login_view(request):
     if request.method == 'POST':
@@ -156,18 +164,27 @@ def admin_dashboard(request):
         return redirect('login')
 
     role = request.GET.get('role', 'all')
-    users = User.objects.all().order_by('-date_joined')
+    show_unassigned = request.GET.get('filter') == 'unassigned'
+    
+    if show_unassigned:  
+        users = User.objects.filter(patient_profile__doctor__isnull=True).order_by('-date_joined')
+    else:
+        users = User.objects.all().order_by('-date_joined')
+        if role == 'doctor':
+            users = users.filter(is_staff=True)
+        elif role == 'patient':
+            users = users.filter(is_staff=False)
 
-    if role == 'doctor':
-        users = users.filter(is_staff=True)
-    elif role == 'patient':
-        users = users.filter(is_staff=False)
+    unassigned_patients_count = Patient.objects.filter(doctor__isnull=True).count()
 
     context = {
         'users': users,
         'total_users': User.objects.count(),
         'active_doctors': User.objects.filter(is_staff=True).count(),
         'active_patients': User.objects.filter(is_staff=False).count(),
+        'unassigned_patients_count': unassigned_patients_count,
+        'show_unassigned': show_unassigned,
+        'selected_role': role,
     }
 
     if request.headers.get('HX-Request'):
@@ -212,10 +229,10 @@ def patient_dashboard_view(request):
 
         today = timezone.now().date()
         upcoming_appointments = Appointment.objects.filter(
-            patient=patient_profile,
-            status='SCHEDULED',
-            scheduled_date__gte=today
-        ).order_by('scheduled_date', 'scheduled_time')
+    patient=patient_profile,
+    status__iexact='CONFIRMED',  
+    scheduled_date__gte=today
+).order_by('scheduled_date', 'scheduled_time')
 
         total_meds = medications.count()
         if total_meds > 0:
@@ -379,7 +396,7 @@ def doctor_dashboard(request):
         'patients': patients,
         'total_patients': patients.count(),
         'active_sos_alerts': active_sos_alerts,
-        'weekly_schedules': weekly_schedules,  # Template-ലേക്ക് weekly_schedules അയക്കുന്നു
+        'weekly_schedules': weekly_schedules, 
     }
     return render(request, 'doctor_dashboard.html', context)
 
@@ -411,7 +428,7 @@ def upload_report_view(request):
         try:
             patient_profile = Patient.objects.get(user=request.user)
 
-            # Mock AI Extraction Logic (മരുന്ന്/ലാബ് റിപ്പോർട്ടിലെ സാമ്പിൾ അനാളിസിസ്)
+      
             summary_text = f"Report '{report_file.name}' analyzed: Key clinical parameters extracted. Elevated Fasting Glucose and Cholesterol flags detected."
             status_text = "Elevated Risk Flags Detected"
             flags = [
@@ -421,7 +438,7 @@ def upload_report_view(request):
                 {'metric': 'HbA1c', 'val': '5.9%', 'status': 'ELEVATED'}
             ]
 
-            # Database-ലേക്ക് റിപ്പോർട്ട് സേവ് ചെയ്യുന്നു
+        
             DiagnosticReport.objects.create(
                 patient=patient_profile,
                 report_file=report_file,

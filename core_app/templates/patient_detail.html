@@ -31,9 +31,20 @@
         <h1 class="text-2xl font-bold">{% if patient.user %}{{ patient.user.get_full_name|default:patient.user.username }}{% else %}{{ patient.name }}{% endif %}</h1>
         <p class="text-xs text-slate-400">Age: {{ patient.age|default:"N/A" }} yrs | Email: {% if patient.user %}{{ patient.user.email }}{% else %}N/A{% endif %}</p>
       </div>
-      <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-        STATUS: ACTIVE PATIENT
-      </span>
+      
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <!-- HEADER WHATSAPP ACTION BUTTON -->
+        <a href="https://wa.me/{{ patient.phone }}?text=Hello%20{% if patient.user %}{{ patient.user.first_name }}{% else %}{{ patient.name }}{% endif %}%2C%20this%20is%20a%20reminder%20from%20Dr.%20Samuel%20via%20MediSense." target="_blank">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.205 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+          </svg>
+        
+        </a>
+
+        <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+          STATUS: ACTIVE PATIENT
+        </span>
+      </div>
     </div>
 
     <!-- Main Content Grid -->
@@ -117,60 +128,21 @@
               Add to Patient's Pill List ➔
             </button>
           </form>
-        </div>
-        <a href="{% url 'send_whatsapp_reminder' %}" 
-       style="background-color: #25D366; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; margin-top: 10px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326z"/>
-        </svg>
-        Send WhatsApp Reminder
-    </a>
 
-        <!-- SCHEDULE CLINICAL FOLLOW-UP FORM 
-        <div class="p-6 rounded-3xl bg-[#0a111e] border border-slate-800 space-y-4 shadow-xl">
-          <h3 class="text-sm font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-2">
-            <span>📅</span>
-            <span>Schedule Follow-up</span>
-          </h3>
-
-          <form action="{% url 'create_appointment' patient.id %}" method="POST" class="space-y-3">
-            {% csrf_token %}
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1">Date</label>
-                <input type="date" name="scheduled_date" required 
-                       class="w-full text-xs bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-400">
-              </div>
-
-              <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1">Time</label>
-                <input type="time" name="scheduled_time" required 
-                       class="w-full text-xs bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-400">
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-1">Appointment Type</label>
-              <select name="appointment_type" 
-                      class="w-full text-xs bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-400">
-                <option value="ROUTINE">Routine Checkup</option>
-                <option value="CRITICAL">Critical Follow-up</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-1">Reason / Notes</label>
-              <input type="text" name="reason" placeholder="e.g. Hypertension Re-evaluation" 
-                     class="w-full text-xs bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-400">
-            </div>
-
-            <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-bold bg-cyan-400 text-slate-950 hover:bg-cyan-300 transition">
-              Set Schedule ➔
-            </button>
-          </form>
+          <!-- WHATSAPP DIRECT BUTTON BELOW FORM -->
+          <div class="pt-2 border-t border-slate-800/80">
+            <a href="https://wa.me/91{{ patient.phone|default:'9876543210' }}?text=Hello%20{% if patient.user %}{{ patient.user.first_name|default:patient.user.username }}{% else %}{{ patient.name }}{% endif %},%20Dr.%20{{ request.user.last_name|default:request.user.username }}%20has%20reminded%20you%20to%20take%20your%20daily%20dosage.%20Please%20check%20your%20MediSense%20dashboard%20to%20see%20your%20medications%20and%20update%20your%20progress." 
+               target="_blank" 
+               class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all shadow-md shadow-emerald-500/10">
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.205 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+              </svg>
+              <span>Notify via WhatsApp</span>
+            </a>
+          </div>
         </div>
 
-      </div-->
+      </div>
 
     </div>
   </div>

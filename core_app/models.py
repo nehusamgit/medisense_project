@@ -17,7 +17,7 @@ class Patient(models.Model):
     doctor = models.ForeignKey(DoctorProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_patients')
     name = models.CharField(max_length=100)
     age = models.PositiveIntegerField() # Mandatory field
-    phone = models.CharField(max_length=15, blank=True)
+    phone = models.CharField(max_length=15, default="919876543210", help_text="Enter phone number with country code without + (e.g. 919876543210)")
     condition = models.CharField(max_length=50, default='general')
 
     def __str__(self):
