@@ -49,6 +49,32 @@ class PatientVital(models.Model):
         return f"{self.patient.name} - Vitals ({self.logged_at.strftime('%Y-%m-%d %H:%M')})"
 
 
+class PatientThreshold(models.Model):
+    patient = models.OneToOneField(Patient, on_delete=models.CASCADE, related_name='thresholds')
+    min_systolic_bp = models.IntegerField(default=90, help_text="Minimum safe systolic BP")
+    max_systolic_bp = models.IntegerField(default=140, help_text="Maximum safe systolic BP")
+    min_diastolic_bp = models.IntegerField(default=60, help_text="Minimum safe diastolic BP")
+    max_diastolic_bp = models.IntegerField(default=90, help_text="Maximum safe diastolic BP")
+    min_blood_sugar = models.FloatField(default=70, help_text="Minimum safe blood sugar")
+    max_blood_sugar = models.FloatField(default=180, help_text="Maximum safe blood sugar")
+    min_spo2 = models.FloatField(default=90, help_text="Minimum safe oxygen saturation")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.patient.name} threshold settings"
+
+
+class PatientCaseSheetNote(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='case_sheet_notes')
+    doctor = models.ForeignKey(DoctorProfile, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    clinical_impression = models.TextField()
+    recommended_action = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+
 class AIRiskAssessment(models.Model):
     """Stores AI/ML risk evaluations linked to vital logs (Phase 1)."""
     RISK_LEVEL_CHOICES = [

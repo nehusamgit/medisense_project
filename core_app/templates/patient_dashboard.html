@@ -131,6 +131,18 @@
 
     </div>
 
+    <div class="p-4 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 text-sm text-cyan-200">
+      {% if patient.thresholds %}
+        <div class="flex flex-wrap gap-3 text-xs font-semibold">
+          <span>Target BP: {{ patient.thresholds.min_systolic_bp }}–{{ patient.thresholds.max_systolic_bp }} / {{ patient.thresholds.min_diastolic_bp }}–{{ patient.thresholds.max_diastolic_bp }} mmHg</span>
+          <span>Target Sugar: {{ patient.thresholds.min_blood_sugar }}–{{ patient.thresholds.max_blood_sugar }} mg/dL</span>
+          <span>Min SpO2: {{ patient.thresholds.min_spo2 }}%</span>
+        </div>
+      {% else %}
+        <div class="text-xs font-semibold text-cyan-200">Doctor safety thresholds are not configured yet.</div>
+      {% endif %}
+    </div>
+
     <!-- DAILY VITALS INPUT & AI RISK ASSESSMENT & PILL CHECKLIST GRID -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 

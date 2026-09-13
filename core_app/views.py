@@ -12,7 +12,13 @@ from django.utils import timezone
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from twilio.rest import Client
-from .models import Patient, DoctorProfile, PatientVital, AIRiskAssessment, Medication, Appointment, EmergencyAlert, DiagnosticReport
+from io import BytesIO
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from .models import Patient, DoctorProfile, PatientVital, PatientThreshold, PatientCaseSheetNote, AIRiskAssessment, Medication, Appointment, EmergencyAlert, DiagnosticReport
 
 def register_view(request):
     if request.method == 'POST':
@@ -495,6 +501,221 @@ def patient_detail_view(request, patient_id):
         'latest_vital': latest_vital,
     }
     return render(request, 'patient_detail.html', context)
+
+
+@login_required
+def patient_case_sheet_view(request, patient_id):
+    patient = get_object_or_404(Patient, id=patient_id)
+    thresholds, _ = PatientThreshold.objects.get_or_create(patient=patient)
+
+    if request.method == 'POST':
+        clinical_impression = request.POST.get('clinical_impression', '').strip()
+        recommended_action = request.POST.get('recommended_action', '').strip()
+
+        if not clinical_impression:
+            messages.error(request, 'Clinical impression is required.')
+        else:
+            doctor = get_object_or_404(DoctorProfile, user=request.user)
+            PatientCaseSheetNote.objects.create(
+                patient=patient,
+                doctor=doctor,
+                clinical_impression=clinical_impression,
+                recommended_action=recommended_action or None,
+            )
+            messages.success(request, 'Clinical progress note saved successfully.')
+            return redirect('patient_case_sheet', patient_id=patient.id)
+
+    vital_history = PatientVital.objects.filter(patient=patient).order_by('-logged_at')
+    vital_history_with_flags = []
+
+    for vital in vital_history:
+        systolic_flag = vital.systolic_bp < thresholds.min_systolic_bp or vital.systolic_bp > thresholds.max_systolic_bp
+        diastolic_flag = vital.diastolic_bp < thresholds.min_diastolic_bp or vital.diastolic_bp > thresholds.max_diastolic_bp
+        sugar_flag = vital.blood_sugar < thresholds.min_blood_sugar or vital.blood_sugar > thresholds.max_blood_sugar
+        spo2_flag = vital.spo2_level < thresholds.min_spo2
+
+        vital_history_with_flags.append({
+            'id': vital.id,
+            'logged_at': vital.logged_at,
+            'systolic_bp': vital.systolic_bp,
+            'diastolic_bp': vital.diastolic_bp,
+            'blood_sugar': vital.blood_sugar,
+            'heart_rate': vital.heart_rate,
+            'spo2_level': vital.spo2_level,
+            'systolic_flag': systolic_flag,
+            'diastolic_flag': diastolic_flag,
+            'sugar_flag': sugar_flag,
+            'spo2_flag': spo2_flag,
+            'bp_flag': systolic_flag or diastolic_flag,
+            'bp_tooltip': f"Target BP: {thresholds.min_systolic_bp}-{thresholds.max_systolic_bp} / {thresholds.min_diastolic_bp}-{thresholds.max_diastolic_bp} mmHg",
+            'sugar_tooltip': f"Target sugar: {thresholds.min_blood_sugar}-{thresholds.max_blood_sugar} mg/dL",
+            'spo2_tooltip': f"Target SpO2: ≥ {thresholds.min_spo2}%",
+        })
+
+    context = {
+        'patient': patient,
+        'thresholds': thresholds,
+        'vital_history': vital_history_with_flags,
+        'case_notes': PatientCaseSheetNote.objects.filter(patient=patient),
+    }
+    return render(request, 'doctor/patient_case_sheet.html', context)
+
+
+@login_required
+def update_patient_thresholds(request, patient_id):
+    patient = get_object_or_404(Patient, id=patient_id)
+
+    if request.method != 'POST':
+        return redirect('patient_case_sheet', patient_id=patient.id)
+
+    try:
+        current_doctor = request.user.doctor_profile
+    except DoctorProfile.DoesNotExist:
+        messages.error(request, 'Only doctors can configure patient thresholds.')
+        return redirect('patient_case_sheet', patient_id=patient.id)
+
+    if patient.doctor and patient.doctor != current_doctor:
+        messages.error(request, 'You can only update thresholds for your assigned patient.')
+        return redirect('doctor_dashboard')
+
+    thresholds_data = {
+        'min_systolic_bp': int(request.POST.get('min_systolic_bp', 90)),
+        'max_systolic_bp': int(request.POST.get('max_systolic_bp', 140)),
+        'min_diastolic_bp': int(request.POST.get('min_diastolic_bp', 60)),
+        'max_diastolic_bp': int(request.POST.get('max_diastolic_bp', 90)),
+        'min_blood_sugar': float(request.POST.get('min_blood_sugar', 70)),
+        'max_blood_sugar': float(request.POST.get('max_blood_sugar', 180)),
+        'min_spo2': float(request.POST.get('min_spo2', 90)),
+    }
+
+    PatientThreshold.objects.update_or_create(patient=patient, defaults=thresholds_data)
+    messages.success(request, 'Patient threshold targets updated successfully.')
+    return redirect('patient_case_sheet', patient_id=patient.id)
+
+
+@login_required
+def export_case_sheet_pdf(request, patient_id):
+    patient = get_object_or_404(Patient, id=patient_id)
+    vital_history = PatientVital.objects.filter(patient=patient).order_by('-logged_at')
+    case_notes = PatientCaseSheetNote.objects.filter(patient=patient).order_by('-created_at')
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=25 * mm,
+        leftMargin=25 * mm,
+        topMargin=20 * mm,
+        bottomMargin=20 * mm,
+    )
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'TitleStyle',
+        parent=styles['Title'],
+        fontSize=18,
+        leading=24,
+        textColor='#0f172a',
+        spaceAfter=12,
+    )
+    section_style = ParagraphStyle(
+        'SectionStyle',
+        parent=styles['Heading2'],
+        fontSize=12,
+        leading=16,
+        textColor='#0f172a',
+        spaceBefore=14,
+        spaceAfter=8,
+    )
+    body_style = ParagraphStyle(
+        'BodyStyle',
+        parent=styles['BodyText'],
+        fontSize=9,
+        leading=13,
+        textColor='#0f172a',
+    )
+
+    story = []
+    story.append(Paragraph('MediSense | Patient Case Sheet', title_style))
+    story.append(Paragraph(f'Patient Summary', section_style))
+
+    patient_info = [
+        ['Name', str(patient.name)],
+        ['Age', str(getattr(patient, 'age', 'Not recorded'))],
+        ['Phone', str(getattr(patient, 'phone', 'Not recorded'))],
+        ['Condition', str(getattr(patient, 'condition', 'General'))],
+    ]
+
+    patient_table = Table(patient_info, colWidths=[55 * mm, 110 * mm])
+    patient_table.setStyle(
+        TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), '#f8fafc'),
+            ('GRID', (0, 0), (-1, -1), 0.5, '#cbd5e1'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ROWBACKGROUNDS', (0, 0), (-1, -1), ['#ffffff', '#f8fafc']),
+        ])
+    )
+    story.append(patient_table)
+    story.append(Spacer(1, 10))
+
+    story.append(Paragraph('Clinical Notes History', section_style))
+    if case_notes.exists():
+        note_rows = []
+        for note in case_notes:
+            note_rows.append([
+                Paragraph(f"{note.created_at.strftime('%Y-%m-%d %H:%M')}<br/>Dr. {note.doctor.user.get_full_name() or note.doctor.user.username if note.doctor else 'Clinical Team'}", body_style),
+                Paragraph(f"{note.clinical_impression}", body_style),
+                Paragraph(f"{note.recommended_action or '—'}", body_style),
+            ])
+        notes_table = Table(note_rows, colWidths=[38 * mm, 82 * mm, 38 * mm])
+        notes_table.setStyle(
+            TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), '#e2e8f0'),
+                ('GRID', (0, 0), (-1, -1), 0.5, '#cbd5e1'),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                ('FONTSIZE', (0, 0), (-1, -1), 8),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), ['#ffffff', '#f8fafc']),
+            ])
+        )
+        story.append(notes_table)
+    else:
+        story.append(Paragraph('No clinical notes recorded.', body_style))
+
+    story.append(Spacer(1, 10))
+    story.append(Paragraph('Historical Vitals Table', section_style))
+
+    vital_rows = [['Date / Time', 'BP', 'Blood Sugar', 'Heart Rate', 'SpO2']]
+    for vital in vital_history:
+        vital_rows.append([
+            vital.logged_at.strftime('%Y-%m-%d %H:%M'),
+            f"{vital.systolic_bp} / {vital.diastolic_bp} mmHg",
+            f"{vital.blood_sugar} mg/dL",
+            f"{vital.heart_rate} BPM",
+            f"{vital.spo2_level}%",
+        ])
+
+    vitals_table = Table(vital_rows, colWidths=[28 * mm, 32 * mm, 30 * mm, 26 * mm, 20 * mm])
+    vitals_table.setStyle(
+        TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), '#e2e8f0'),
+            ('GRID', (0, 0), (-1, -1), 0.5, '#cbd5e1'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 7),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ROWBACKGROUNDS', (1, 1), (-1, -1), ['#ffffff', '#f8fafc']),
+        ])
+    )
+    story.append(vitals_table)
+
+    doc.build(story)
+    pdf = buffer.getvalue()
+    buffer.close()
+
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="CaseSheet_Patient_{patient_id}.pdf"'
+    return response
     
 @login_required
 def add_medication_view(request, patient_id):
