@@ -25,8 +25,8 @@ SECRET_KEY = 'django-insecure-jbw2u+g+j$!-)c*cy^nlh2^j@fbm4m@ei*d+f%76ys%klf3fsn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://medisense-project.onrender.com', 'https://*.onrender.com']
 
 # Application definition
 
