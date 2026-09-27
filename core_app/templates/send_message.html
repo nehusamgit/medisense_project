@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-[#050913] px-4 py-8 text-white md:px-8">
+  <div class="mx-auto max-w-2xl">
+    <a href="{% url 'inbox' %}" class="text-sm font-semibold text-cyan-400 hover:text-cyan-300">&larr; Back to inbox</a>
+    <section class="mt-6 rounded-3xl border border-slate-800 bg-[#0a111e] p-6 md:p-8">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-400">Secure communications</p>
+      <h1 class="mt-2 text-3xl font-extrabold">New message</h1>
+      <p class="mt-2 text-sm text-slate-400">To {{ receiver.get_full_name|default:receiver.username }}</p>
+
+      <form method="post" class="mt-8 space-y-5">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+          <div>
+            <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-300">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<p class="mt-1 text-xs text-rose-400">{{ error }}</p>{% endfor %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="w-full rounded-xl bg-cyan-400 px-4 py-3 text-sm font-extrabold text-slate-950 hover:bg-cyan-300">Send secure message</button>
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% if messages %}
+  {% for message in messages %}<div class="mb-4 rounded border border-rose-900/70 bg-rose-950/30 px-3 py-2 text-xs text-rose-300">{{ message }}</div>{% endfor %}
+{% endif %}
+<form action="{% url 'login' %}" method="post" class="space-y-5">
+  {% csrf_token %}
+  <input type="hidden" name="portal" value="{{ portal }}">
+  <div><label for="username" class="mb-2 block text-[9px] font-bold uppercase tracking-widest text-cyan-500">{% if portal == 'doctor' %}Staff ID or Email{% else %}Email or Registered Phone Number{% endif %}</label><input id="username" name="username" type="text" required autocomplete="username" placeholder="{% if portal == 'doctor' %}staff@medisense.org{% else %}you@email.com or +91 98765 43210{% endif %}" class="w-full rounded-md border border-slate-700 bg-[#1b293d] px-4 py-3 text-xs text-white outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50"></div>
+  <div><div class="mb-2 flex justify-between"><label for="password" class="block text-[9px] font-bold uppercase tracking-widest text-cyan-500">Security Key / Password</label><a href="{% url 'simple_password_reset' %}" class="text-[9px] text-cyan-500 hover:underline">Forgot credentials?</a></div><input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Enter your password" class="w-full rounded-md border border-slate-700 bg-[#1b293d] px-4 py-3 text-xs text-white outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50"></div>
+  <label class="flex items-center gap-2 text-[10px] text-slate-500"><input type="checkbox" name="remember_me" class="h-3 w-3 rounded border-slate-700 bg-slate-800 text-cyan-400 focus:ring-0"> Remember this device</label>
+  <button type="submit" class="w-full rounded-md border border-cyan-400 bg-cyan-400/10 py-3 text-[10px] font-bold uppercase tracking-widest text-cyan-300 shadow-[0_0_18px_rgba(34,211,238,.12)] transition hover:bg-cyan-400 hover:text-slate-950">{% if portal == 'doctor' %}Authenticate System →{% else %}Access Health Portal →{% endif %}</button>
+</form>
+<div class="mt-7 text-center text-[10px] text-slate-500">New to MediSense? <a href="{% url 'register' %}" class="font-bold text-cyan-400 hover:underline">Create your patient account</a></div>

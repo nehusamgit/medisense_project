@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Patient, MedicationLog, DoctorProfile
+from .models import Patient, MedicationLog, DoctorProfile, SecureMessage
 
 class PatientForm(forms.ModelForm):
     class Meta:
@@ -64,3 +64,33 @@ class UserRegistrationForm(forms.ModelForm):
         if password != confirm_password:
             raise forms.ValidationError("Passwords do not match!")
         return cleaned_data
+
+
+class SecureMessageForm(forms.ModelForm):
+    SUBJECT_CHOICES = [
+        ('Appointment follow-up', 'Appointment follow-up'),
+        ('Medication question', 'Medication question'),
+        ('Prescription refill', 'Prescription refill'),
+        ('Lab report discussion', 'Lab report discussion'),
+        ('Symptoms update', 'Symptoms update'),
+        ('Treatment progress', 'Treatment progress'),
+        ('General health question', 'General health question'),
+    ]
+
+    subject = forms.ChoiceField(
+        choices=SUBJECT_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-cyan-400',
+        }),
+    )
+
+    class Meta:
+        model = SecureMessage
+        fields = ['subject', 'body']
+        widgets = {
+            'body': forms.Textarea(attrs={
+                'class': 'w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-cyan-400',
+                'placeholder': 'Write your secure message...',
+                'rows': 8,
+            }),
+        }

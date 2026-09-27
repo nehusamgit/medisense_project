@@ -6,8 +6,10 @@ urlpatterns = [
     path('', views.home_view, name='home'),
     path('register/', views.register_view, name='register'),
     path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
     path('reset-password/', simple_password_reset_view, name='simple_password_reset'),
     path('patient/', views.patient_dashboard_view, name='patient_dashboard'),
+    path('patient/clinical-note/<int:note_id>/mark-read/', views.mark_case_note_read, name='mark_case_note_read'),
     path('add-patient/', views.add_patient, name='add_patient'),
     path('doctor/', views.doctor_dashboard, name='doctor_dashboard'), 
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'), 
@@ -27,6 +29,9 @@ urlpatterns = [
     path('trigger-sos/', views.trigger_sos_alert, name='trigger_sos_alert'),
     path('check-emergencies/', views.check_emergencies, name='check_emergencies'),
     path('resolve-alert/<int:alert_id>/', views.resolve_alert, name='resolve_alert'),
+    path('inbox/', views.inbox_view, name='inbox'),
+    path('message/<int:message_id>/', views.message_detail_view, name='message_detail'),
+    path('send-message/<int:patient_id>/', views.send_message_view, name='send_message'),
     
     
 ]

@@ -36,7 +36,7 @@
       </button>
 
       {% if user.is_authenticated %}
-        <a href="#" 
+        <a href="{% url 'logout' %}" 
            class="px-4 py-2 rounded-xl text-xs font-semibold border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 transition">
           Sign Out
         </a>
@@ -103,7 +103,7 @@
             Log daily vitals (BP, Glucose, SpO2), track medicine adherence checklist, and view AI-generated risk evaluations.
           </p>
         </div>
-        <a href="{% url 'login' %}" class="mt-6 inline-flex items-center gap-1.5 text-xs font-bold text-cyan-400 hover:underline">
+        <a href="{% url 'login' %}?portal=patient" class="mt-6 inline-flex items-center gap-1.5 text-xs font-bold text-cyan-400 hover:underline">
           Sign In as Patient ➔
         </a>
       </div>
@@ -123,7 +123,7 @@
             Monitor high-risk flagged patients, review vital history logs, prescribe daily medications, and schedule consultations.
           </p>
         </div>
-        <a href="{% url 'login' %}" class="mt-6 inline-flex items-center gap-1.5 text-xs font-bold text-cyan-400 hover:underline">
+        <a href="{% url 'login' %}?portal=doctor" class="mt-6 inline-flex items-center gap-1.5 text-xs font-bold text-cyan-400 hover:underline">
           Sign In as Doctor ➔
         </a>
       </div>

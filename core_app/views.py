@@ -2,13 +2,16 @@ import re
 import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, Http404
+from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
+from django.views.decorators.cache import never_cache
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from twilio.rest import Client
@@ -18,7 +21,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
-from .models import Patient, DoctorProfile, PatientVital, PatientThreshold, PatientCaseSheetNote, AIRiskAssessment, Medication, Appointment, EmergencyAlert, DiagnosticReport
+from .models import Patient, DoctorProfile, PatientVital, PatientThreshold, PatientCaseSheetNote, AIRiskAssessment, Medication, Appointment, EmergencyAlert, DiagnosticReport, SecureMessage
+from .forms import SecureMessageForm
 
 def register_view(request):
     if request.method == 'POST':
@@ -113,28 +117,62 @@ def register_view(request):
     return render(request, 'register.html')
 
 def login_view(request):
+    portal = request.POST.get('portal', request.GET.get('portal', 'patient'))
+    if portal not in {'patient', 'doctor', 'caregiver'}:
+        portal = 'patient'
+
+    # Capture 'next' URL parameter for post-login redirection
+    next_url = request.POST.get('next', request.GET.get('next', ''))
+
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
+        username_or_email = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
 
-        if not username or not password:
-            messages.error(request, "Please enter both username and password.")
-            return render(request, 'login.html')
+        if not username_or_email or not password:
+            messages.error(request, "Please enter both credentials.")
+            return render(request, 'login.html', {'portal': portal, 'next': next_url})
 
+        # 1. Support Email or Username authentication
+        username = username_or_email
+        if '@' in username_or_email:
+            try:
+                user_obj = User.objects.get(email__iexact=username_or_email)
+                username = user_obj.username
+            except (User.DoesNotExist, User.MultipleObjectsReturned):
+                pass  # Fallback to authenticating with the raw input string
+
+        # 2. Authenticate against Django backend
         user = authenticate(request, username=username, password=password)
+
         if user is not None:
+            if not user.is_active:
+                messages.error(request, "This account is inactive. Please contact system admin.")
+                return render(request, 'login.html', {'portal': portal, 'next': next_url})
+
             login(request, user)
-            
+
+            # 3. Honor 'next' parameter if user was redirected from a protected URL
+            if next_url:
+                return redirect(next_url)
+
+            # 4. Smart Role-Based Routing
             if user.is_superuser or user.is_staff:
                 return redirect('admin_dashboard')
             elif hasattr(user, 'doctorprofile') or hasattr(user, 'doctor_profile'):
                 return redirect('doctor_dashboard')
+            elif hasattr(user, 'caregiver') or hasattr(user, 'caregiverprofile'):
+                return redirect('caregiver_dashboard')
             else:
                 return redirect('patient_dashboard')
         else:
-            messages.error(request, "Invalid username or password.")
+            messages.error(request, "Invalid username/email or password.")
 
-    return render(request, 'login.html')
+    return render(request, 'login.html', {'portal': portal, 'next': next_url})
+
+@never_cache
+def logout_view(request):
+    logout(request)
+    return redirect('home')
 
 def simple_password_reset_view(request):
     if request.method == 'POST':
@@ -165,6 +203,7 @@ def simple_password_reset_view(request):
     return render(request, 'simple_password_reset.html')
 
 @login_required
+@never_cache
 def admin_dashboard(request):
     if not request.user.is_superuser and not request.user.is_staff:
         return redirect('login')
@@ -214,6 +253,7 @@ def delete_user(request, user_id):
     return HttpResponse(status=400)
 
 @login_required
+@never_cache
 def patient_dashboard_view(request):
     try:
         patient_profile = Patient.objects.get(user=request.user)
@@ -226,10 +266,12 @@ def patient_dashboard_view(request):
     adherence_rate = 0
     vitals_history = []
     latest_report = None
+    case_notes = PatientCaseSheetNote.objects.none()
 
     if patient_profile:
         latest_vital = PatientVital.objects.filter(patient=patient_profile).order_by('-logged_at').first()
         medications = Medication.objects.filter(patient=patient_profile).order_by('-created_at')
+        case_notes = PatientCaseSheetNote.objects.filter(patient=patient_profile).select_related('doctor__user')[:10]
         
         latest_report = DiagnosticReport.objects.filter(patient=patient_profile).order_by('-created_at').first()
 
@@ -266,6 +308,7 @@ def patient_dashboard_view(request):
         'adherence_rate': adherence_rate,
         'vitals_history_json': json.dumps(vitals_history),
         'latest_report': latest_report,
+        'case_notes': case_notes,
     }
 
     return render(request, 'patient_dashboard.html', context)
@@ -378,11 +421,17 @@ def log_vitals_view(request):
 
 
 @login_required
+@never_cache
 def doctor_dashboard(request):
     try:
         current_doctor = request.user.doctor_profile 
         patients = Patient.objects.filter(doctor=current_doctor)
         active_sos_alerts = EmergencyAlert.objects.filter(doctor=current_doctor, is_resolved=False).order_by('-created_at')
+        doctor_case_notes_query = PatientCaseSheetNote.objects.filter(
+            doctor=current_doctor
+        ).select_related('patient').order_by('-created_at')
+        unread_case_notes_count = doctor_case_notes_query.filter(patient_read_at__isnull=True).count()
+        doctor_case_notes = doctor_case_notes_query[:10]
         
 
         today = timezone.now().date()
@@ -396,6 +445,8 @@ def doctor_dashboard(request):
         patients = Patient.objects.none()
         active_sos_alerts = EmergencyAlert.objects.none()
         weekly_schedules = Appointment.objects.none()
+        doctor_case_notes = PatientCaseSheetNote.objects.none()
+        unread_case_notes_count = 0
 
     context = {
         'doctor': current_doctor,
@@ -403,8 +454,25 @@ def doctor_dashboard(request):
         'total_patients': patients.count(),
         'active_sos_alerts': active_sos_alerts,
         'weekly_schedules': weekly_schedules, 
+        'doctor_case_notes': doctor_case_notes,
+        'unread_case_notes_count': unread_case_notes_count,
     }
     return render(request, 'doctor_dashboard.html', context)
+
+
+@login_required
+@require_POST
+def mark_case_note_read(request, note_id):
+    note = get_object_or_404(
+        PatientCaseSheetNote,
+        id=note_id,
+        patient__user=request.user,
+    )
+    if note.patient_read_at is None:
+        note.patient_read_at = timezone.now()
+        note.save(update_fields=['patient_read_at'])
+
+    return redirect('patient_dashboard')
 
 @login_required
 def patient_modal(request, patient_id):
@@ -513,6 +581,7 @@ def patient_case_sheet_view(request, patient_id):
         recommended_action = request.POST.get('recommended_action', '').strip()
 
         if not clinical_impression:
+            
             messages.error(request, 'Clinical impression is required.')
         else:
             doctor = get_object_or_404(DoctorProfile, user=request.user)
@@ -869,4 +938,74 @@ def resolve_alert(request, alert_id):
     alert.is_resolved = True
     alert.save()
     return JsonResponse({'status': 'success', 'alert_id': alert_id})
+
+
+@login_required
+def inbox_view(request):
+    secure_messages = SecureMessage.objects.filter(
+        receiver=request.user
+    ).select_related('patient', 'sender').order_by('-created_at')
+    return render(request, 'inbox.html', {'secure_messages': secure_messages})
+
+
+@login_required
+def message_detail_view(request, message_id):
+    message = get_object_or_404(
+        SecureMessage.objects.select_related('patient', 'sender', 'receiver'),
+        Q(sender=request.user) | Q(receiver=request.user),
+        id=message_id,
+    )
+
+    if not message.is_read and request.user == message.receiver:
+        message.is_read = True
+        message.save(update_fields=['is_read'])
+
+    return render(request, 'message_detail.html', {'message': message})
+
+
+@login_required
+def send_message_view(request, patient_id):
+    try:
+        doctor = request.user.doctor_profile
+    except DoctorProfile.DoesNotExist:
+        doctor = None
+
+    try:
+        patient_user_profile = request.user.patient_profile
+    except Patient.DoesNotExist:
+        patient_user_profile = None
+
+    if doctor is not None:
+        patient = get_object_or_404(Patient, id=patient_id, doctor=doctor)
+        receiver = patient.user
+    elif patient_user_profile is not None:
+        if patient_user_profile.id != patient_id:
+            raise PermissionDenied
+        patient = patient_user_profile
+        receiver = patient.doctor.user if patient.doctor else None
+    else:
+        raise PermissionDenied
+
+    if receiver is None:
+        messages.error(request, 'This patient is not connected to a messaging recipient.')
+        return redirect('inbox')
+
+    if request.method == 'POST':
+        form = SecureMessageForm(request.POST)
+        if form.is_valid():
+            secure_message = form.save(commit=False)
+            secure_message.patient = patient
+            secure_message.sender = request.user
+            secure_message.receiver = receiver
+            secure_message.save()
+            messages.success(request, 'Your secure message was sent.')
+            return redirect('inbox')
+    else:
+        form = SecureMessageForm()
+
+    return render(request, 'send_message.html', {
+        'form': form,
+        'patient': patient,
+        'receiver': receiver,
+    })
 

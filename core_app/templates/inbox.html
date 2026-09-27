@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-[#050913] px-4 py-8 text-white md:px-8">
+  <div class="mx-auto max-w-6xl space-y-6">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-5">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-400">Secure communications</p>
+        <h1 class="mt-2 text-3xl font-extrabold">Inbox</h1>
+      </div>
+      <a href="{% url 'patient_dashboard' %}" class="text-sm font-semibold text-cyan-400 hover:text-cyan-300">Back to dashboard</a>
+    </div>
+
+    <section class="overflow-hidden rounded-3xl border border-slate-800 bg-[#0a111e]">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-left text-sm">
+          <thead class="border-b border-slate-800 bg-slate-950/70 text-xs uppercase tracking-wider text-slate-500">
+            <tr>
+              <th class="px-5 py-4">Sender</th>
+              <th class="px-5 py-4">Subject</th>
+              <th class="px-5 py-4">Received</th>
+              <th class="px-5 py-4"><span class="sr-only">Open</span></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800">
+            {% for message in secure_messages %}
+              <tr class="transition hover:bg-slate-900/60 {% if not message.is_read %}font-bold{% endif %}">
+                <td class="whitespace-nowrap px-5 py-4 text-slate-200">{{ message.sender.get_full_name|default:message.sender.username }}</td>
+                <td class="max-w-sm px-5 py-4 text-slate-200">
+                  <span>{{ message.subject }}</span>
+                  {% if not message.is_read %}<span class="ml-2 rounded-full bg-cyan-400 px-2 py-0.5 text-[10px] font-extrabold uppercase text-slate-950">New</span>{% endif %}
+                </td>
+                <td class="whitespace-nowrap px-5 py-4 text-xs text-slate-500">{{ message.created_at|date:'M d, Y - h:i A' }}</td>
+                <td class="px-5 py-4 text-right"><a href="{% url 'message_detail' message.id %}" class="font-semibold text-cyan-400 hover:text-cyan-300">View</a></td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="px-5 py-16 text-center text-sm text-slate-500">Your secure inbox is empty.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

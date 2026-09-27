@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-[#050913] px-4 py-8 text-white md:px-8">
+  <article class="mx-auto max-w-3xl rounded-3xl border border-slate-800 bg-[#0a111e] p-6 md:p-8">
+    <a href="{% url 'inbox' %}" class="text-sm font-semibold text-cyan-400 hover:text-cyan-300">&larr; Back to inbox</a>
+    <div class="mt-8 border-b border-slate-800 pb-6">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-400">Secure message</p>
+      <h1 class="mt-2 text-3xl font-extrabold">{{ message.subject }}</h1>
+      <div class="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500">
+        <span>From {{ message.sender.get_full_name|default:message.sender.username }}</span>
+        <time datetime="{{ message.created_at|date:'c' }}">{{ message.created_at|date:'M d, Y - h:i A' }}</time>
+      </div>
+    </div>
+    <p class="mt-8 whitespace-pre-line text-sm leading-7 text-slate-300">{{ message.body }}</p>
+    <div class="mt-10 border-t border-slate-800 pt-5">
+      <a href="{% url 'send_message' message.patient.id %}" class="inline-flex rounded-xl bg-cyan-400 px-4 py-2.5 text-sm font-bold text-slate-950 hover:bg-cyan-300">Reply</a>
+    </div>
+  </article>
+</div>
+{% endblock %}

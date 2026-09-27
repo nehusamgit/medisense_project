@@ -68,6 +68,7 @@ class PatientCaseSheetNote(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='case_sheet_notes')
     doctor = models.ForeignKey(DoctorProfile, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    patient_read_at = models.DateTimeField(null=True, blank=True)
     clinical_impression = models.TextField()
     recommended_action = models.CharField(max_length=255, blank=True, null=True)
 
@@ -162,3 +163,19 @@ class DiagnosticReport(models.Model):
 
     def __str__(self):
         return f"{self.patient.name} - Report ({self.created_at.strftime('%Y-%m-%d')})"
+
+
+class SecureMessage(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='secure_messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    subject = models.CharField(max_length=150)
+    body = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.subject} - {self.sender.username} to {self.receiver.username}"

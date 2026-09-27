@@ -51,6 +51,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'medisense_core.urls'
+LOGIN_URL = '/login/'
 
 TEMPLATES = [
     {

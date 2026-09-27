@@ -1,102 +1,38 @@
-{% extends 'base.html' %}
-
-{% block content %}
-<div x-data="{ theme: 'dark' }" 
-     :class="theme === 'dark' ? 'bg-[#060b13] text-white' : 'bg-slate-100 text-slate-800'" 
-     class="min-h-screen relative flex items-center justify-center p-4 transition-colors duration-300 font-sans">
-
-  <!-- Light/Dark Switcher -->
-  <button @click="theme = theme === 'dark' ? 'light' : 'dark'" 
-          type="button"
-          class="absolute top-6 right-6 flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-medium transition-all"
-          :class="theme === 'dark' ? 'border-slate-800 bg-[#0a111e] text-slate-300 hover:border-cyan-500' : 'border-slate-300 bg-white text-slate-700 hover:border-cyan-600 shadow-sm'">
-    <span x-text="theme === 'dark' ? '☀️ Light' : '🌙 Dark'"></span>
-  </button>
-
-  <!-- Auth Card Container -->
-  <div id="auth-card" 
-       class="w-full max-w-md p-8 rounded-3xl border shadow-2xl transition-all duration-300"
-       :class="theme === 'dark' ? 'bg-[#0a111e]/90 border-slate-800/80 shadow-cyan-950/20' : 'bg-white border-slate-200 shadow-slate-200'">
-
-    <!-- Logo & Title Header -->
-    <div class="flex flex-col items-center mb-6 text-center">
-    
-      <h2 class="text-xl font-semibold mt-4">Welcome back</h2>
-      <p class="text-xs text-slate-400 mt-1">Sign in to access your health dashboard</p>
-    </div>
-
-    <!-- Sign In / Register Tab Switcher -->
-    <div class="grid grid-cols-2 p-1 mb-6 rounded-xl border"
-         :class="theme === 'dark' ? 'bg-[#060b13] border-slate-800' : 'bg-slate-100 border-slate-200'">
-      <button type="button" class="py-2 text-center text-xs font-semibold rounded-lg bg-cyan-950/60 border border-cyan-500/40 text-cyan-400 shadow-sm">Sign In</button>
-      <a href="{% url 'register' %}" class="py-2 text-center text-xs font-medium text-slate-400 hover:text-cyan-500 transition">
-        Register
-      </a>
-    </div>
-
-    <!-- Flash Messages -->
-    {% if messages %}
-      {% for message in messages %}
-        <div class="p-3 mb-4 text-xs rounded-xl text-center border font-medium {% if message.tags == 'error' %} bg-red-500/10 border-red-500/30 text-red-400 {% else %} bg-emerald-500/10 border-emerald-500/30 text-emerald-400 {% endif %}">
-          {{ message }}
-        </div>
-      {% endfor %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% if portal == 'doctor' %}Provider Access{% else %}Patient Login{% endif %} | MediSense</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+  <style>
+    :root { font-family: 'DM Sans', sans-serif; color-scheme: dark; }
+    body { background: #070c17; }
+    .serif { font-family: 'Playfair Display', Georgia, serif; }
+    .grid-bg { background-image: linear-gradient(rgba(35, 87, 112, .08) 1px, transparent 1px), linear-gradient(90deg, rgba(35, 87, 112, .08) 1px, transparent 1px); background-size: 32px 32px; }
+    .doctor-grid { background-image: linear-gradient(rgba(14, 105, 118, .09) 1px, transparent 1px), linear-gradient(90deg, rgba(14, 105, 118, .09) 1px, transparent 1px); background-size: 28px 28px; }
+    .pulse-line { stroke-dasharray: 620; animation: draw 4s linear infinite; }
+    @keyframes draw { from { stroke-dashoffset: 620; } to { stroke-dashoffset: 0; } }
+    @media (prefers-reduced-motion: reduce) { .pulse-line { animation: none; } }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100">
+  <main class="min-h-screen flex items-stretch">
+    {% if portal == 'doctor' %}
+      <section class="hidden lg:flex lg:w-1/2 relative overflow-hidden doctor-grid bg-[#0d1526] p-12 flex-col justify-between">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_72%_40%,rgba(0,215,232,.1),transparent_40%)]"></div>
+        <div class="relative flex items-center gap-2 text-sm font-bold text-cyan-300"><span class="text-lg">⌁</span> MediSense <span class="text-[9px] font-medium text-slate-500 ml-2">CLINICAL SYSTEMS</span></div>
+        <div class="relative flex-1 flex items-center justify-center"><div class="w-full max-w-xl"><p class="mb-5 text-[10px] uppercase tracking-[.28em] text-cyan-500">Real-time patient telemetry</p><div class="relative h-40 rounded-lg border border-cyan-900/70 bg-[#07121d]/80 overflow-hidden"><div class="absolute inset-0 opacity-50 doctor-grid"></div><svg class="relative w-full h-full" viewBox="0 0 620 160" preserveAspectRatio="none" aria-label="Patient heartbeat monitor"><path class="pulse-line" d="M0 86 H42 L52 82 L60 91 L70 88 L82 89 L94 87 L105 88 L118 85 L128 89 L141 87 L153 89 L165 86 L180 88 L193 88 L205 86 L216 87 L224 118 L236 25 L250 88 L268 88 L282 86 L294 88 L309 88 L323 87 L336 88 L348 86 L360 89 L372 88 L382 87 L392 88 L403 117 L416 25 L430 88 L448 88 L462 86 L476 89 L490 87 L503 88 L516 86 L529 88 L541 87 L553 88 L564 87 L577 89 L590 87 L620 87" fill="none" stroke="#06d9e9" stroke-width="2"/></svg><span class="absolute top-3 right-4 text-[10px] text-cyan-400">72 BPM</span></div><div class="grid grid-cols-4 gap-2 mt-2 text-[9px] text-slate-400"><span class="border border-cyan-950 bg-[#091827] p-3">SpO₂ <b class="block text-white mt-1">98%</b></span><span class="border border-cyan-950 bg-[#091827] p-3">BP <b class="block text-white mt-1">118/76</b></span><span class="border border-cyan-950 bg-[#091827] p-3">HR <b class="block text-white mt-1">72</b></span><span class="border border-cyan-950 bg-[#091827] p-3">TEMP <b class="block text-white mt-1">36.8°</b></span></div></div></div>
+        <div class="relative grid grid-cols-3 gap-3 text-[9px]"><div class="border border-emerald-900/60 bg-emerald-950/20 p-4"><span class="text-emerald-400">● SYSTEM UPTIME</span><b class="block text-lg text-white mt-2">99.9%</b></div><div class="border border-cyan-900/60 bg-cyan-950/20 p-4"><span class="text-cyan-400">● SYNC PIPELINE</span><b class="block text-lg text-white mt-2">Active</b></div><div class="border border-violet-900/60 bg-violet-950/20 p-4"><span class="text-violet-400">● ENCRYPTION</span><b class="block text-lg text-white mt-2">AES-256</b></div></div>
+      </section>
+      <section class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-[#101827]"><div class="w-full max-w-sm"><a href="{% url 'home' %}" class="text-xs text-slate-500 hover:text-cyan-400">← Back to MediSense</a><div class="mt-12 mb-10"><span class="inline-flex items-center gap-2 rounded border border-cyan-800 bg-cyan-950/40 px-3 py-1 text-[9px] uppercase tracking-widest text-cyan-400">✦ COS Operational</span><h1 class="mt-6 text-xl font-bold">MediSense Provider Access</h1><p class="mt-2 text-xs text-slate-500">Authorized Access for Clinical Personnel & Staff.</p></div>{% include 'partials/login_form.html' %}<p class="mt-8 text-center text-[10px] text-slate-600">Protected clinical workspace · AES-256 encrypted</p></div></section>
+    {% else %}
+      <section class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-[#080d1b]"><div class="w-full max-w-sm"><a href="{% url 'home' %}" class="text-xs text-slate-500 hover:text-cyan-400">← Back to MediSense</a><div class="mt-12 mb-9"><div class="flex items-center gap-2 text-sm font-bold text-cyan-400">⌁ MediSense</div><h1 class="serif mt-7 text-3xl leading-tight">Your Personal<br><i>Health Hub</i></h1><p class="mt-4 text-xs leading-relaxed text-slate-500">Log in to view vitals, access prescription records, and consult your care team.</p></div>{% include 'partials/login_form.html' %}<p class="mt-8 text-center text-[10px] text-slate-600">◉ Protected by 256-bit encryption & GDPR compliance.</p></div></section>
+      <section class="hidden lg:flex lg:w-1/2 relative overflow-hidden grid-bg bg-[#101827] p-16 items-center"><div class="absolute inset-0 bg-[radial-gradient(circle_at_40%_50%,rgba(17,155,185,.12),transparent_48%)]"></div><div class="relative w-full max-w-md mx-auto"><p class="text-[9px] uppercase tracking-[.3em] text-cyan-500">Patient care hub</p><h2 class="serif mt-4 text-3xl">Everything you need,<br><i>in one place.</i></h2><div class="mt-8 space-y-3"><div class="rounded-xl border border-cyan-900/70 bg-[#122237]/80 p-5"><div class="flex justify-between text-[10px] text-slate-400"><span>Assigned Physician</span><span class="text-emerald-400">● Active</span></div><b class="mt-2 block text-sm">Dr. S. Patel</b><div class="mt-4 border-t border-slate-700/60 pt-3 text-[10px] text-cyan-300">▣ Secure Messaging <span class="float-right rounded bg-cyan-500/20 px-2 py-0.5">2 unread</span></div></div><div class="rounded-xl border border-cyan-900/70 bg-[#122237]/80 p-5"><span class="text-[10px] text-slate-400">Vitals Snapshot</span><b class="block text-xs mt-1">Last 7 Days <span class="float-right text-emerald-400">↗ Normal / Stable</span></b><svg class="w-full h-16 mt-3" viewBox="0 0 360 64" preserveAspectRatio="none"><path d="M0 38 C35 33 45 45 72 36 S115 42 145 31 S180 37 210 29 S250 41 280 30 S320 35 360 23" fill="none" stroke="#10b9b4" stroke-width="3"/></svg><span class="text-[9px] text-slate-400">SpO₂ 98% · Heart Rate 72 bpm</span></div><div class="rounded-xl border border-cyan-900/70 bg-[#122237]/80 p-5"><span class="text-[10px] text-slate-400">Medical Records</span><b class="block text-xs mt-1">Case Sheets & Lab Reports</b><div class="mt-3 space-y-2 text-[10px] text-slate-300"><div class="rounded bg-[#0c1829] p-2">LAB &nbsp; Hematology Report <span class="float-right text-cyan-400">⇩ PDF</span></div><div class="rounded bg-[#0c1829] p-2">CASE &nbsp; Consultation Case Sheet <span class="float-right text-cyan-400">⇩ PDF</span></div><div class="rounded bg-[#0c1829] p-2">IMG &nbsp; Chest X-Ray Report <span class="float-right text-cyan-400">⇩ PDF</span></div></div></div></div></div></section>
     {% endif %}
-
-    <!-- Standard Form POST -->
-    <form action="{% url 'login' %}" method="POST" class="space-y-4">
-      {% csrf_token %}
-
-      <!-- EMAIL OR USERNAME -->
-      <div>
-        <label class="block text-[10px] font-bold text-cyan-500 tracking-wider uppercase mb-1">Email or Username</label>
-        <div class="relative">
-          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-xs">✉️</span>
-          <input type="text" name="username" required placeholder="john12 or john@email.com" 
-                 :class="theme === 'dark' ? 'bg-[#060b13] border-slate-800 text-white placeholder-slate-600' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'"
-                 class="w-full pl-9 pr-4 py-2.5 rounded-xl text-xs border focus:outline-none focus:border-cyan-500 transition">
-        </div>
-      </div>
-
-      <!-- PASSWORD -->
-      <div>
-        <label class="block text-[10px] font-bold text-cyan-500 tracking-wider uppercase mb-1">Password</label>
-        <div class="relative">
-          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-xs">🔒</span>
-          <input type="password" name="password" required placeholder="••••••••••••" 
-                 :class="theme === 'dark' ? 'bg-[#060b13] border-slate-800 text-white placeholder-slate-600' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'"
-                 class="w-full pl-9 pr-4 py-2.5 rounded-xl text-xs border focus:outline-none focus:border-cyan-500 transition">
-        </div>
-      </div>
-
-      <!-- Remember me & Forgot Password -->
-      <div class="flex items-center justify-between text-xs pt-1">
-        <label class="flex items-center gap-2 cursor-pointer text-slate-400">
-          <input type="checkbox" name="remember_me" class="rounded border-slate-800 text-cyan-500 focus:ring-0">
-          <span>Remember me</span>
-        </label>
-        <a href="{% url 'simple_password_reset' %}" class="text-cyan-500 hover:underline">Forgot password?</a>
-      </div>
-
-      <!-- Submit Button -->
-      <button type="submit" class="w-full py-3 mt-2 rounded-xl text-xs font-bold bg-cyan-400 text-slate-950 hover:bg-cyan-300 transition-all shadow-lg shadow-cyan-400/20 flex items-center justify-center gap-2 cursor-pointer">
-        <span>➔]</span> Sign In
-      </button>
-    </form>
-
-    <div class="flex items-center my-5">
-      <div class="flex-grow border-t" :class="theme === 'dark' ? 'border-slate-800' : 'border-slate-200'"></div>
-      <span class="px-3 text-[10px] text-slate-400 uppercase tracking-widest font-semibold">OR</span>
-      <div class="flex-grow border-t" :class="theme === 'dark' ? 'border-slate-800' : 'border-slate-200'"></div>
-    </div>
-
-    <p class="text-center text-xs text-slate-400">
-      Don't have an account? 
-      <a href="{% url 'register' %}" class="text-cyan-500 font-semibold hover:underline cursor-pointer">
-        Create one
-      </a>
-    </p>
-
-  </div>
-</div>
-{% endblock %}
+  </main>
+</body>
+</html>
