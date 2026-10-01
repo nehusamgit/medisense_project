@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -75,15 +77,17 @@ WSGI_APPLICATION = 'medisense_core.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 
+# Use DATABASE_URL env variable on Render (production).
+# Falls back to local PostgreSQL for development.
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'medisense_db',      
-        'USER': 'postgres',           
-        'PASSWORD': '',   
-        'HOST': 'localhost',           
-        'PORT': '5432', 
-    }               
+    'default': dj_database_url.config(
+        default=os.environ.get(
+            'DATABASE_URL',
+            'postgresql://postgres:@localhost:5432/medisense_db'
+        ),
+        conn_max_age=600,
+        ssl_require=False,
+    )
 }
     
 
