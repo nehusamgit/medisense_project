@@ -79,14 +79,14 @@ WSGI_APPLICATION = 'medisense_core.wsgi.application'
 
 # Use DATABASE_URL env variable on Render (production).
 # Falls back to local PostgreSQL for development.
+_db_url = os.environ.get('DATABASE_URL', 'postgresql://postgres:@localhost:5432/medisense_db')
+_is_production = 'DATABASE_URL' in os.environ
+
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get(
-            'DATABASE_URL',
-            'postgresql://postgres:@localhost:5432/medisense_db'
-        ),
+        default=_db_url,
         conn_max_age=600,
-        ssl_require=True,
+        ssl_require=_is_production,
     )
 }
     
