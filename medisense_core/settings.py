@@ -86,7 +86,7 @@ DATABASES = {
             'postgresql://postgres:@localhost:5432/medisense_db'
         ),
         conn_max_age=600,
-        ssl_require=False,
+        ssl_require=True,
     )
 }
     
