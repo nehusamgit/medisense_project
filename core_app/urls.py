@@ -30,6 +30,7 @@ urlpatterns = [
     path('check-emergencies/', views.check_emergencies, name='check_emergencies'),
     path('resolve-alert/<int:alert_id>/', views.resolve_alert, name='resolve_alert'),
     path('inbox/', views.inbox_view, name='inbox'),
+    path('inbox/<int:patient_id>/', views.inbox_view, name='inbox_thread'),
     path('message/<int:message_id>/', views.message_detail_view, name='message_detail'),
     path('send-message/<int:patient_id>/', views.send_message_view, name='send_message'),
     

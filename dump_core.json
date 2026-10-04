@@ -1,0 +1,1867 @@
+[
+{
+  "model": "core_app.doctorprofile",
+  "pk": 1,
+  "fields": {
+    "user": 6,
+    "specialization": "",
+    "age": null
+  }
+},
+{
+  "model": "core_app.doctorprofile",
+  "pk": 2,
+  "fields": {
+    "user": 7,
+    "specialization": "",
+    "age": null
+  }
+},
+{
+  "model": "core_app.doctorprofile",
+  "pk": 3,
+  "fields": {
+    "user": 8,
+    "specialization": "",
+    "age": null
+  }
+},
+{
+  "model": "core_app.doctorprofile",
+  "pk": 4,
+  "fields": {
+    "user": 10,
+    "specialization": "",
+    "age": null
+  }
+},
+{
+  "model": "core_app.doctorprofile",
+  "pk": 5,
+  "fields": {
+    "user": 15,
+    "specialization": "",
+    "age": null
+  }
+},
+{
+  "model": "core_app.doctorprofile",
+  "pk": 6,
+  "fields": {
+    "user": 16,
+    "specialization": "",
+    "age": null
+  }
+},
+{
+  "model": "core_app.doctorprofile",
+  "pk": 7,
+  "fields": {
+    "user": 18,
+    "specialization": "",
+    "age": null
+  }
+},
+{
+  "model": "core_app.doctorprofile",
+  "pk": 8,
+  "fields": {
+    "user": 19,
+    "specialization": "",
+    "age": null
+  }
+},
+{
+  "model": "core_app.doctorprofile",
+  "pk": 9,
+  "fields": {
+    "user": 20,
+    "specialization": "General Practitioner",
+    "age": 30
+  }
+},
+{
+  "model": "core_app.doctorprofile",
+  "pk": 10,
+  "fields": {
+    "user": 22,
+    "specialization": "General Practitioner",
+    "age": 30
+  }
+},
+{
+  "model": "core_app.doctorprofile",
+  "pk": 11,
+  "fields": {
+    "user": 23,
+    "specialization": "General Practitioner",
+    "age": 32
+  }
+},
+{
+  "model": "core_app.doctorprofile",
+  "pk": 12,
+  "fields": {
+    "user": 24,
+    "specialization": "General Practitioner",
+    "age": 50
+  }
+},
+{
+  "model": "core_app.doctorprofile",
+  "pk": 13,
+  "fields": {
+    "user": 27,
+    "specialization": "General Practitioner",
+    "age": 31
+  }
+},
+{
+  "model": "core_app.doctorprofile",
+  "pk": 14,
+  "fields": {
+    "user": 29,
+    "specialization": "General Practitioner",
+    "age": 37
+  }
+},
+{
+  "model": "core_app.patient",
+  "pk": 2,
+  "fields": {
+    "user": null,
+    "doctor": null,
+    "name": "Tom Mathew",
+    "age": 20,
+    "phone": "",
+    "condition": ""
+  }
+},
+{
+  "model": "core_app.patient",
+  "pk": 3,
+  "fields": {
+    "user": null,
+    "doctor": null,
+    "name": "Mohan",
+    "age": 20,
+    "phone": "",
+    "condition": ""
+  }
+},
+{
+  "model": "core_app.patient",
+  "pk": 4,
+  "fields": {
+    "user": 21,
+    "doctor": null,
+    "name": "Tom Roy",
+    "age": 24,
+    "phone": "",
+    "condition": "general"
+  }
+},
+{
+  "model": "core_app.patient",
+  "pk": 5,
+  "fields": {
+    "user": 5,
+    "doctor": 12,
+    "name": "John",
+    "age": 30,
+    "phone": "",
+    "condition": "general"
+  }
+},
+{
+  "model": "core_app.patient",
+  "pk": 6,
+  "fields": {
+    "user": 26,
+    "doctor": 12,
+    "name": "Hari Ravi",
+    "age": 37,
+    "phone": "",
+    "condition": "hypertension"
+  }
+},
+{
+  "model": "core_app.patient",
+  "pk": 7,
+  "fields": {
+    "user": 25,
+    "doctor": null,
+    "name": "admin",
+    "age": 30,
+    "phone": "",
+    "condition": "general"
+  }
+},
+{
+  "model": "core_app.patient",
+  "pk": 8,
+  "fields": {
+    "user": 28,
+    "doctor": 1,
+    "name": "Mohan Kumar",
+    "age": 40,
+    "phone": "",
+    "condition": "hypertension"
+  }
+},
+{
+  "model": "core_app.patient",
+  "pk": 11,
+  "fields": {
+    "user": 32,
+    "doctor": 1,
+    "name": "Nehu Sam Abraham",
+    "age": 22,
+    "phone": "6238628247",
+    "condition": "general"
+  }
+},
+{
+  "model": "core_app.patient",
+  "pk": 12,
+  "fields": {
+    "user": 33,
+    "doctor": 12,
+    "name": "Albin Suresh",
+    "age": 23,
+    "phone": "6238987336",
+    "condition": "diabetes"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 1,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 110,
+    "diastolic_bp": 76,
+    "heart_rate": 72,
+    "blood_sugar": 103.0,
+    "spo2_level": 96.5,
+    "logged_at": "2026-08-03T17:44:02.625Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 2,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 140,
+    "diastolic_bp": 85,
+    "heart_rate": 72,
+    "blood_sugar": 105.0,
+    "spo2_level": 76.3,
+    "logged_at": "2026-08-04T05:38:47.448Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 3,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 110,
+    "diastolic_bp": 65,
+    "heart_rate": 72,
+    "blood_sugar": 100.0,
+    "spo2_level": 98.0,
+    "logged_at": "2026-08-05T13:53:35.126Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 4,
+  "fields": {
+    "patient": 6,
+    "systolic_bp": 140,
+    "diastolic_bp": 90,
+    "heart_rate": 65,
+    "blood_sugar": 120.0,
+    "spo2_level": 92.0,
+    "logged_at": "2026-08-05T16:29:58.250Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 5,
+  "fields": {
+    "patient": 6,
+    "systolic_bp": 116,
+    "diastolic_bp": 80,
+    "heart_rate": 74,
+    "blood_sugar": 102.0,
+    "spo2_level": 98.0,
+    "logged_at": "2026-08-05T16:30:31.531Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 6,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 150,
+    "diastolic_bp": 90,
+    "heart_rate": 63,
+    "blood_sugar": 112.0,
+    "spo2_level": 93.0,
+    "logged_at": "2026-08-06T06:48:42.304Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 7,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 120,
+    "diastolic_bp": 80,
+    "heart_rate": 72,
+    "blood_sugar": 105.0,
+    "spo2_level": 98.0,
+    "logged_at": "2026-08-06T08:09:10.829Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 8,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 99,
+    "diastolic_bp": 63,
+    "heart_rate": 56,
+    "blood_sugar": 85.0,
+    "spo2_level": 75.0,
+    "logged_at": "2026-08-09T14:09:37.187Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 9,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 120,
+    "diastolic_bp": 80,
+    "heart_rate": 73,
+    "blood_sugar": 104.8,
+    "spo2_level": 98.0,
+    "logged_at": "2026-08-09T14:13:15.048Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 10,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 90,
+    "diastolic_bp": 50,
+    "heart_rate": 65,
+    "blood_sugar": 82.0,
+    "spo2_level": 90.0,
+    "logged_at": "2026-08-09T14:29:08.602Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 11,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 140,
+    "diastolic_bp": 100,
+    "heart_rate": 70,
+    "blood_sugar": 120.0,
+    "spo2_level": 99.0,
+    "logged_at": "2026-08-09T14:29:41.193Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 12,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 120,
+    "diastolic_bp": 80,
+    "heart_rate": 72,
+    "blood_sugar": 105.0,
+    "spo2_level": 98.0,
+    "logged_at": "2026-08-09T14:30:45.784Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 13,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 115,
+    "diastolic_bp": 80,
+    "heart_rate": 72,
+    "blood_sugar": 104.0,
+    "spo2_level": 96.0,
+    "logged_at": "2026-08-09T14:32:22.957Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 14,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 120,
+    "diastolic_bp": 75,
+    "heart_rate": 73,
+    "blood_sugar": 105.0,
+    "spo2_level": 98.0,
+    "logged_at": "2026-08-09T14:32:57.700Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 15,
+  "fields": {
+    "patient": 6,
+    "systolic_bp": 80,
+    "diastolic_bp": 68,
+    "heart_rate": 63,
+    "blood_sugar": 89.0,
+    "spo2_level": 70.0,
+    "logged_at": "2026-08-10T08:14:06.027Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 16,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 145,
+    "diastolic_bp": 90,
+    "heart_rate": 70,
+    "blood_sugar": 115.0,
+    "spo2_level": 95.0,
+    "logged_at": "2026-08-11T13:44:56.014Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 17,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 115,
+    "diastolic_bp": 87,
+    "heart_rate": 71,
+    "blood_sugar": 107.5,
+    "spo2_level": 98.0,
+    "logged_at": "2026-08-12T16:22:23.711Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 18,
+  "fields": {
+    "patient": 8,
+    "systolic_bp": 145,
+    "diastolic_bp": 86,
+    "heart_rate": 70,
+    "blood_sugar": 103.0,
+    "spo2_level": 94.0,
+    "logged_at": "2026-08-12T16:36:00.149Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 19,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 125,
+    "diastolic_bp": 81,
+    "heart_rate": 70,
+    "blood_sugar": 103.0,
+    "spo2_level": 97.8,
+    "logged_at": "2026-08-16T07:33:42.889Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 20,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 145,
+    "diastolic_bp": 90,
+    "heart_rate": 71,
+    "blood_sugar": 114.0,
+    "spo2_level": 92.0,
+    "logged_at": "2026-08-16T07:43:52.812Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 21,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 120,
+    "diastolic_bp": 79,
+    "heart_rate": 73,
+    "blood_sugar": 135.0,
+    "spo2_level": 91.0,
+    "logged_at": "2026-08-16T08:37:38.347Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 22,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 100,
+    "diastolic_bp": 62,
+    "heart_rate": 72,
+    "blood_sugar": 140.0,
+    "spo2_level": 93.0,
+    "logged_at": "2026-08-16T08:38:37.458Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 23,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 145,
+    "diastolic_bp": 90,
+    "heart_rate": 74,
+    "blood_sugar": 115.0,
+    "spo2_level": 97.0,
+    "logged_at": "2026-08-16T08:58:55.024Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 24,
+  "fields": {
+    "patient": 8,
+    "systolic_bp": 125,
+    "diastolic_bp": 84,
+    "heart_rate": 70,
+    "blood_sugar": 102.0,
+    "spo2_level": 95.0,
+    "logged_at": "2026-08-16T15:38:05.240Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 25,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 140,
+    "diastolic_bp": 89,
+    "heart_rate": 74,
+    "blood_sugar": 103.0,
+    "spo2_level": 98.0,
+    "logged_at": "2026-08-16T15:39:16.784Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 26,
+  "fields": {
+    "patient": 8,
+    "systolic_bp": 145,
+    "diastolic_bp": 90,
+    "heart_rate": 68,
+    "blood_sugar": 105.0,
+    "spo2_level": 97.0,
+    "logged_at": "2026-08-16T15:40:24.251Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 27,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 135,
+    "diastolic_bp": 90,
+    "heart_rate": 73,
+    "blood_sugar": 107.5,
+    "spo2_level": 94.0,
+    "logged_at": "2026-08-18T14:21:37.203Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 28,
+  "fields": {
+    "patient": 11,
+    "systolic_bp": 116,
+    "diastolic_bp": 76,
+    "heart_rate": 73,
+    "blood_sugar": 135.0,
+    "spo2_level": 97.4,
+    "logged_at": "2026-09-07T16:33:45.289Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 29,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 123,
+    "diastolic_bp": 81,
+    "heart_rate": 73,
+    "blood_sugar": 110.0,
+    "spo2_level": 95.0,
+    "logged_at": "2026-09-07T16:36:09.197Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 30,
+  "fields": {
+    "patient": 6,
+    "systolic_bp": 118,
+    "diastolic_bp": 75,
+    "heart_rate": 71,
+    "blood_sugar": 105.0,
+    "spo2_level": 94.0,
+    "logged_at": "2026-09-08T04:09:48.613Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 31,
+  "fields": {
+    "patient": 12,
+    "systolic_bp": 135,
+    "diastolic_bp": 87,
+    "heart_rate": 72,
+    "blood_sugar": 103.0,
+    "spo2_level": 95.4,
+    "logged_at": "2026-09-13T16:32:38.498Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 32,
+  "fields": {
+    "patient": 11,
+    "systolic_bp": 134,
+    "diastolic_bp": 89,
+    "heart_rate": 74,
+    "blood_sugar": 114.8,
+    "spo2_level": 98.0,
+    "logged_at": "2026-09-19T16:41:42.295Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 33,
+  "fields": {
+    "patient": 12,
+    "systolic_bp": 133,
+    "diastolic_bp": 84,
+    "heart_rate": 76,
+    "blood_sugar": 110.6,
+    "spo2_level": 98.0,
+    "logged_at": "2026-09-21T07:05:26.653Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 34,
+  "fields": {
+    "patient": 6,
+    "systolic_bp": 135,
+    "diastolic_bp": 91,
+    "heart_rate": 64,
+    "blood_sugar": 112.0,
+    "spo2_level": 98.0,
+    "logged_at": "2026-09-21T16:35:45.001Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 35,
+  "fields": {
+    "patient": 12,
+    "systolic_bp": 118,
+    "diastolic_bp": 81,
+    "heart_rate": 73,
+    "blood_sugar": 112.0,
+    "spo2_level": 98.0,
+    "logged_at": "2026-09-27T15:14:07.353Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 36,
+  "fields": {
+    "patient": 12,
+    "systolic_bp": 125,
+    "diastolic_bp": 95,
+    "heart_rate": 70,
+    "blood_sugar": 116.0,
+    "spo2_level": 88.0,
+    "logged_at": "2026-09-27T15:14:56.970Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 37,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 124,
+    "diastolic_bp": 83,
+    "heart_rate": 79,
+    "blood_sugar": 105.0,
+    "spo2_level": 98.0,
+    "logged_at": "2026-09-28T08:13:44.917Z"
+  }
+},
+{
+  "model": "core_app.patientvital",
+  "pk": 38,
+  "fields": {
+    "patient": 5,
+    "systolic_bp": 135,
+    "diastolic_bp": 90,
+    "heart_rate": 72,
+    "blood_sugar": 112.0,
+    "spo2_level": 98.0,
+    "logged_at": "2026-09-28T08:14:57.417Z"
+  }
+},
+{
+  "model": "core_app.patientthreshold",
+  "pk": 1,
+  "fields": {
+    "patient": 5,
+    "min_systolic_bp": 80,
+    "max_systolic_bp": 130,
+    "min_diastolic_bp": 60,
+    "max_diastolic_bp": 80,
+    "min_blood_sugar": 70.0,
+    "max_blood_sugar": 120.0,
+    "min_spo2": 90.0,
+    "updated_at": "2026-09-13T07:34:50.298Z"
+  }
+},
+{
+  "model": "core_app.patientthreshold",
+  "pk": 2,
+  "fields": {
+    "patient": 11,
+    "min_systolic_bp": 90,
+    "max_systolic_bp": 140,
+    "min_diastolic_bp": 60,
+    "max_diastolic_bp": 90,
+    "min_blood_sugar": 70.0,
+    "max_blood_sugar": 180.0,
+    "min_spo2": 90.0,
+    "updated_at": "2026-09-13T16:30:17.581Z"
+  }
+},
+{
+  "model": "core_app.patientthreshold",
+  "pk": 3,
+  "fields": {
+    "patient": 8,
+    "min_systolic_bp": 90,
+    "max_systolic_bp": 140,
+    "min_diastolic_bp": 60,
+    "max_diastolic_bp": 90,
+    "min_blood_sugar": 70.0,
+    "max_blood_sugar": 180.0,
+    "min_spo2": 90.0,
+    "updated_at": "2026-09-13T16:30:43.038Z"
+  }
+},
+{
+  "model": "core_app.patientthreshold",
+  "pk": 4,
+  "fields": {
+    "patient": 12,
+    "min_systolic_bp": 80,
+    "max_systolic_bp": 135,
+    "min_diastolic_bp": 60,
+    "max_diastolic_bp": 85,
+    "min_blood_sugar": 70.0,
+    "max_blood_sugar": 110.0,
+    "min_spo2": 90.0,
+    "updated_at": "2026-09-13T16:34:39.062Z"
+  }
+},
+{
+  "model": "core_app.patientthreshold",
+  "pk": 5,
+  "fields": {
+    "patient": 6,
+    "min_systolic_bp": 90,
+    "max_systolic_bp": 140,
+    "min_diastolic_bp": 60,
+    "max_diastolic_bp": 90,
+    "min_blood_sugar": 70.0,
+    "max_blood_sugar": 180.0,
+    "min_spo2": 90.0,
+    "updated_at": "2026-09-21T16:37:10.953Z"
+  }
+},
+{
+  "model": "core_app.patientcasesheetnote",
+  "pk": 1,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "created_at": "2026-09-13T07:10:42.346Z",
+    "patient_read_at": "2026-09-20T06:38:53.279Z",
+    "clinical_impression": "John's health condition is stable right now and he is regularly following the prescription schedule.",
+    "recommended_action": "continue taking the medicines"
+  }
+},
+{
+  "model": "core_app.patientcasesheetnote",
+  "pk": 2,
+  "fields": {
+    "patient": 6,
+    "doctor": 12,
+    "created_at": "2026-09-21T16:38:42.603Z",
+    "patient_read_at": null,
+    "clinical_impression": "Hari has an elevated BP. Please take medicines as prescribed without fail.",
+    "recommended_action": "strictly follow the medication"
+  }
+},
+{
+  "model": "core_app.patientcasesheetnote",
+  "pk": 3,
+  "fields": {
+    "patient": 6,
+    "doctor": 12,
+    "created_at": "2026-09-27T13:54:30.808Z",
+    "patient_read_at": null,
+    "clinical_impression": "Hari, you have a regular consultation on October 1, 2026 at 10:30 am. Please do remember and attend.",
+    "recommended_action": null
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 1,
+  "fields": {
+    "vital": 1,
+    "risk_score": 0.15,
+    "risk_level": "LOW",
+    "predicted_condition": "Normal Vitals",
+    "recommendation": "Maintain regular diet, hydration, and daily medication schedule.",
+    "assessed_at": "2026-08-03T17:44:02.631Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 2,
+  "fields": {
+    "vital": 2,
+    "risk_score": 0.88,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Hypertension & Hyperglycemia Risk",
+    "recommendation": "Critical vitals detected. Immediate clinical review required.",
+    "assessed_at": "2026-08-04T05:38:47.466Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 3,
+  "fields": {
+    "vital": 3,
+    "risk_score": 0.15,
+    "risk_level": "LOW",
+    "predicted_condition": "Normal Vitals",
+    "recommendation": "Maintain regular diet, hydration, and daily medication schedule.",
+    "assessed_at": "2026-08-05T13:53:35.141Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 4,
+  "fields": {
+    "vital": 4,
+    "risk_score": 0.88,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Hypertension & Hyperglycemia Risk",
+    "recommendation": "Critical vitals detected. Immediate clinical review required.",
+    "assessed_at": "2026-08-05T16:29:58.257Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 5,
+  "fields": {
+    "vital": 5,
+    "risk_score": 0.15,
+    "risk_level": "LOW",
+    "predicted_condition": "Normal Vitals",
+    "recommendation": "Maintain regular diet, hydration, and daily medication schedule.",
+    "assessed_at": "2026-08-05T16:30:31.532Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 6,
+  "fields": {
+    "vital": 6,
+    "risk_score": 0.88,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Hypertension & Hyperglycemia Risk",
+    "recommendation": "Critical vitals detected. Immediate clinical review required.",
+    "assessed_at": "2026-08-06T06:48:42.339Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 7,
+  "fields": {
+    "vital": 7,
+    "risk_score": 0.15,
+    "risk_level": "LOW",
+    "predicted_condition": "Normal Vitals",
+    "recommendation": "Maintain regular diet, hydration, and daily medication schedule.",
+    "assessed_at": "2026-08-06T08:09:10.847Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 8,
+  "fields": {
+    "vital": 8,
+    "risk_score": 0.88,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Hypertension & Hyperglycemia Risk",
+    "recommendation": "Critical vitals detected. Immediate clinical review required.",
+    "assessed_at": "2026-08-09T14:09:37.199Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 9,
+  "fields": {
+    "vital": 9,
+    "risk_score": 0.15,
+    "risk_level": "LOW",
+    "predicted_condition": "Normal Vitals",
+    "recommendation": "Maintain regular diet, hydration, and daily medication schedule.",
+    "assessed_at": "2026-08-09T14:13:15.073Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 10,
+  "fields": {
+    "vital": 10,
+    "risk_score": 0.88,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Hypotension (Low BP) & Hypoxia (Low Oxygen) Risk",
+    "recommendation": "Critical vitals detected. Immediate clinical review required.",
+    "assessed_at": "2026-08-09T14:29:08.617Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 11,
+  "fields": {
+    "vital": 11,
+    "risk_score": 0.88,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Hypertension Risk",
+    "recommendation": "Critical vitals detected. Immediate clinical review required.",
+    "assessed_at": "2026-08-09T14:29:41.197Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 12,
+  "fields": {
+    "vital": 12,
+    "risk_score": 0.55,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Elevated Blood Pressure",
+    "recommendation": "Monitor vitals closely over the next 24 hours.",
+    "assessed_at": "2026-08-09T14:30:45.790Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 13,
+  "fields": {
+    "vital": 13,
+    "risk_score": 0.55,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Elevated Blood Pressure",
+    "recommendation": "Monitor vitals closely over the next 24 hours.",
+    "assessed_at": "2026-08-09T14:32:22.959Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 14,
+  "fields": {
+    "vital": 14,
+    "risk_score": 0.15,
+    "risk_level": "NORMAL",
+    "predicted_condition": "Normal Vitals",
+    "recommendation": "Maintain regular diet, hydration, and daily medication schedule.",
+    "assessed_at": "2026-08-09T14:32:57.701Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 15,
+  "fields": {
+    "vital": 15,
+    "risk_score": 0.88,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Hypotension (Low BP) & Hypoxia (Low Oxygen) Risk",
+    "recommendation": "Critical vitals detected. Immediate clinical review required.",
+    "assessed_at": "2026-08-10T08:14:06.036Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 16,
+  "fields": {
+    "vital": 16,
+    "risk_score": 0.88,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Hypertension Risk",
+    "recommendation": "Critical vitals detected. Immediate clinical review required.",
+    "assessed_at": "2026-08-11T13:44:56.025Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 17,
+  "fields": {
+    "vital": 17,
+    "risk_score": 0.55,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Elevated Blood Pressure",
+    "recommendation": "Monitor vitals closely over the next 24 hours.",
+    "assessed_at": "2026-08-12T16:22:23.723Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 18,
+  "fields": {
+    "vital": 18,
+    "risk_score": 0.88,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Hypertension Risk",
+    "recommendation": "Critical vitals detected. Immediate clinical review required.",
+    "assessed_at": "2026-08-12T16:36:00.158Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 19,
+  "fields": {
+    "vital": 19,
+    "risk_score": 0.55,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Elevated Blood Pressure",
+    "recommendation": "Monitor vitals closely over the next 24 hours.",
+    "assessed_at": "2026-08-16T07:33:42.901Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 20,
+  "fields": {
+    "vital": 20,
+    "risk_score": 0.88,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Hypertension & Hypoxia (Low Oxygen) Risk",
+    "recommendation": "Critical vitals detected. Immediate clinical review required.",
+    "assessed_at": "2026-08-16T07:43:52.823Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 21,
+  "fields": {
+    "vital": 21,
+    "risk_score": 0.88,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Hypoxia (Low Oxygen) Risk",
+    "recommendation": "Critical vitals detected. Immediate clinical review required.",
+    "assessed_at": "2026-08-16T08:37:38.363Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 22,
+  "fields": {
+    "vital": 22,
+    "risk_score": 0.55,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Elevated Blood Sugar & Borderline Oxygen Level",
+    "recommendation": "Monitor vitals closely over the next 24 hours.",
+    "assessed_at": "2026-08-16T08:38:37.461Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 23,
+  "fields": {
+    "vital": 23,
+    "risk_score": 0.88,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Hypertension Risk",
+    "recommendation": "Critical vitals detected. Immediate clinical review required.",
+    "assessed_at": "2026-08-16T08:58:55.037Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 24,
+  "fields": {
+    "vital": 24,
+    "risk_score": 0.55,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Elevated Blood Pressure & Borderline Oxygen Level",
+    "recommendation": "Monitor vitals closely over the next 24 hours.",
+    "assessed_at": "2026-08-16T15:38:05.245Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 25,
+  "fields": {
+    "vital": 25,
+    "risk_score": 0.55,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Elevated Blood Pressure",
+    "recommendation": "Monitor vitals closely over the next 24 hours.",
+    "assessed_at": "2026-08-16T15:39:16.787Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 26,
+  "fields": {
+    "vital": 26,
+    "risk_score": 0.88,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Hypertension Risk",
+    "recommendation": "Critical vitals detected. Immediate clinical review required.",
+    "assessed_at": "2026-08-16T15:40:24.254Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 27,
+  "fields": {
+    "vital": 27,
+    "risk_score": 0.55,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Elevated Blood Pressure & Borderline Oxygen Level",
+    "recommendation": "Monitor vitals closely over the next 24 hours.",
+    "assessed_at": "2026-08-18T14:21:37.219Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 28,
+  "fields": {
+    "vital": 28,
+    "risk_score": 0.55,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Elevated Blood Sugar",
+    "recommendation": "Monitor vitals closely over the next 24 hours.",
+    "assessed_at": "2026-09-07T16:33:45.296Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 29,
+  "fields": {
+    "vital": 29,
+    "risk_score": 0.55,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Elevated Blood Pressure & Borderline Oxygen Level",
+    "recommendation": "Monitor vitals closely over the next 24 hours.",
+    "assessed_at": "2026-09-07T16:36:09.200Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 30,
+  "fields": {
+    "vital": 30,
+    "risk_score": 0.55,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Borderline Oxygen Level",
+    "recommendation": "Monitor vitals closely over the next 24 hours.",
+    "assessed_at": "2026-09-08T04:09:48.629Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 31,
+  "fields": {
+    "vital": 31,
+    "risk_score": 0.55,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Elevated Blood Pressure",
+    "recommendation": "Monitor vitals closely over the next 24 hours.",
+    "assessed_at": "2026-09-13T16:32:38.502Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 32,
+  "fields": {
+    "vital": 32,
+    "risk_score": 0.55,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Elevated Blood Pressure",
+    "recommendation": "Monitor vitals closely over the next 24 hours.",
+    "assessed_at": "2026-09-19T16:41:42.340Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 33,
+  "fields": {
+    "vital": 33,
+    "risk_score": 0.55,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Elevated Blood Pressure",
+    "recommendation": "Monitor vitals closely over the next 24 hours.",
+    "assessed_at": "2026-09-21T07:05:26.669Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 34,
+  "fields": {
+    "vital": 34,
+    "risk_score": 0.88,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Hypertension Risk",
+    "recommendation": "Critical vitals detected. Immediate clinical review required.",
+    "assessed_at": "2026-09-21T16:35:45.010Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 35,
+  "fields": {
+    "vital": 35,
+    "risk_score": 0.0346,
+    "risk_level": "LOW",
+    "predicted_condition": "Normal Vitals - Low Risk",
+    "recommendation": "Maintain regular diet, hydration, and daily medication schedule.",
+    "assessed_at": "2026-09-27T15:14:15.397Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 36,
+  "fields": {
+    "vital": 36,
+    "risk_score": 0.0956,
+    "risk_level": "CRITICAL",
+    "predicted_condition": "Critical Vitals Detected",
+    "recommendation": "Immediate clinical review required. Contact your doctor now.",
+    "assessed_at": "2026-09-27T15:14:57.177Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 37,
+  "fields": {
+    "vital": 37,
+    "risk_score": 0.035,
+    "risk_level": "LOW",
+    "predicted_condition": "Normal Vitals - Low Risk",
+    "recommendation": "Maintain regular diet, hydration, and daily medication schedule.",
+    "assessed_at": "2026-09-28T08:14:08.542Z"
+  }
+},
+{
+  "model": "core_app.airiskassessment",
+  "pk": 38,
+  "fields": {
+    "vital": 38,
+    "risk_score": 0.035,
+    "risk_level": "MODERATE",
+    "predicted_condition": "Moderate Risk - Elevated Indicators",
+    "recommendation": "Monitor vitals closely over the next 24-48 hours.",
+    "assessed_at": "2026-09-28T08:14:58.113Z"
+  }
+},
+{
+  "model": "core_app.medication",
+  "pk": 1,
+  "fields": {
+    "patient": 5,
+    "prescribed_by": null,
+    "medicine_name": "Metformin",
+    "dosage": "200mg",
+    "timing": "Afternoon",
+    "is_taken_today": true,
+    "last_taken_date": "2026-09-27",
+    "created_at": "2026-08-09T16:42:45.462Z"
+  }
+},
+{
+  "model": "core_app.medication",
+  "pk": 2,
+  "fields": {
+    "patient": 5,
+    "prescribed_by": null,
+    "medicine_name": "Sulfonylureas",
+    "dosage": "300mg",
+    "timing": "Twice Daily",
+    "is_taken_today": false,
+    "last_taken_date": "2026-08-18",
+    "created_at": "2026-08-09T16:51:27.303Z"
+  }
+},
+{
+  "model": "core_app.medication",
+  "pk": 3,
+  "fields": {
+    "patient": 6,
+    "prescribed_by": null,
+    "medicine_name": "Metformin",
+    "dosage": "250mg",
+    "timing": "Night",
+    "is_taken_today": false,
+    "last_taken_date": "2026-09-08",
+    "created_at": "2026-08-10T06:13:26.433Z"
+  }
+},
+{
+  "model": "core_app.medication",
+  "pk": 4,
+  "fields": {
+    "patient": 6,
+    "prescribed_by": null,
+    "medicine_name": "Sulfonylureas",
+    "dosage": "230mg",
+    "timing": "Afternoon",
+    "is_taken_today": true,
+    "last_taken_date": "2026-09-21",
+    "created_at": "2026-08-10T08:11:43.230Z"
+  }
+},
+{
+  "model": "core_app.medication",
+  "pk": 5,
+  "fields": {
+    "patient": 8,
+    "prescribed_by": null,
+    "medicine_name": "Amlodipine",
+    "dosage": "10mg",
+    "timing": "Afternoon",
+    "is_taken_today": true,
+    "last_taken_date": "2026-08-16",
+    "created_at": "2026-08-12T16:43:05.254Z"
+  }
+},
+{
+  "model": "core_app.medication",
+  "pk": 6,
+  "fields": {
+    "patient": 5,
+    "prescribed_by": null,
+    "medicine_name": "Amlodipine",
+    "dosage": "5mg",
+    "timing": "Morning",
+    "is_taken_today": true,
+    "last_taken_date": "2026-09-07",
+    "created_at": "2026-08-13T04:03:15.297Z"
+  }
+},
+{
+  "model": "core_app.medication",
+  "pk": 7,
+  "fields": {
+    "patient": 8,
+    "prescribed_by": null,
+    "medicine_name": "Telmisartan",
+    "dosage": "80mg",
+    "timing": "Morning",
+    "is_taken_today": false,
+    "last_taken_date": null,
+    "created_at": "2026-08-16T15:30:53.550Z"
+  }
+},
+{
+  "model": "core_app.medication",
+  "pk": 8,
+  "fields": {
+    "patient": 12,
+    "prescribed_by": null,
+    "medicine_name": "Amlodipine",
+    "dosage": "5mg",
+    "timing": "Morning",
+    "is_taken_today": true,
+    "last_taken_date": "2026-09-21",
+    "created_at": "2026-09-13T16:33:42.934Z"
+  }
+},
+{
+  "model": "core_app.appointment",
+  "pk": 1,
+  "fields": {
+    "doctor": 12,
+    "patient": 5,
+    "scheduled_date": "2026-08-13",
+    "scheduled_time": "10:00:00",
+    "appointment_type": "CRITICAL",
+    "reason": "follow up",
+    "status": "SCHEDULED",
+    "created_at": "2026-08-11T15:51:59.598Z"
+  }
+},
+{
+  "model": "core_app.appointment",
+  "pk": 2,
+  "fields": {
+    "doctor": 1,
+    "patient": 6,
+    "scheduled_date": "2026-08-14",
+    "scheduled_time": "10:30:00",
+    "appointment_type": "CRITICAL",
+    "reason": "critical follow up",
+    "status": "SCHEDULED",
+    "created_at": "2026-08-11T16:09:18.339Z"
+  }
+},
+{
+  "model": "core_app.appointment",
+  "pk": 3,
+  "fields": {
+    "doctor": 1,
+    "patient": 8,
+    "scheduled_date": "2026-08-14",
+    "scheduled_time": "11:30:00",
+    "appointment_type": "CRITICAL",
+    "reason": "immediate follow up",
+    "status": "SCHEDULED",
+    "created_at": "2026-08-12T16:43:38.750Z"
+  }
+},
+{
+  "model": "core_app.appointment",
+  "pk": 4,
+  "fields": {
+    "doctor": 12,
+    "patient": 5,
+    "scheduled_date": "2026-08-20",
+    "scheduled_time": "09:30:00",
+    "appointment_type": "ROUTINE",
+    "reason": "follow up",
+    "status": "SCHEDULED",
+    "created_at": "2026-08-15T10:55:27.773Z"
+  }
+},
+{
+  "model": "core_app.appointment",
+  "pk": 5,
+  "fields": {
+    "doctor": 1,
+    "patient": 8,
+    "scheduled_date": "2026-08-18",
+    "scheduled_time": "10:00:00",
+    "appointment_type": "CRITICAL",
+    "reason": "immediate follow up",
+    "status": "SCHEDULED",
+    "created_at": "2026-08-16T15:31:21.985Z"
+  }
+},
+{
+  "model": "core_app.appointment",
+  "pk": 6,
+  "fields": {
+    "doctor": 12,
+    "patient": 6,
+    "scheduled_date": "2026-08-18",
+    "scheduled_time": "09:30:00",
+    "appointment_type": "Follow-up",
+    "reason": "",
+    "status": "Confirmed",
+    "created_at": "2026-08-16T16:46:46.386Z"
+  }
+},
+{
+  "model": "core_app.appointment",
+  "pk": 7,
+  "fields": {
+    "doctor": 12,
+    "patient": 5,
+    "scheduled_date": "2026-09-15",
+    "scheduled_time": "10:00:00",
+    "appointment_type": "Follow-up",
+    "reason": "",
+    "status": "Confirmed",
+    "created_at": "2026-09-07T16:30:51.329Z"
+  }
+},
+{
+  "model": "core_app.appointment",
+  "pk": 8,
+  "fields": {
+    "doctor": 12,
+    "patient": 6,
+    "scheduled_date": "2026-09-11",
+    "scheduled_time": "11:45:00",
+    "appointment_type": "General Consultation",
+    "reason": "",
+    "status": "Confirmed",
+    "created_at": "2026-09-08T04:12:50.315Z"
+  }
+},
+{
+  "model": "core_app.appointment",
+  "pk": 9,
+  "fields": {
+    "doctor": 12,
+    "patient": 6,
+    "scheduled_date": "2026-10-01",
+    "scheduled_time": "10:30:00",
+    "appointment_type": "General Consultation",
+    "reason": "",
+    "status": "Confirmed",
+    "created_at": "2026-09-27T13:52:22.371Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 2,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John has pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-13T16:40:53.922Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 3,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John has pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-13T16:43:36.289Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 4,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John has pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-13T16:46:15.252Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 5,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John has pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-13T16:46:18.684Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 6,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John has pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-13T16:47:06.601Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 7,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John has pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-13T16:55:29.613Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 8,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John has pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-14T14:09:01.668Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 9,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John has pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-14T14:18:35.308Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 10,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John has pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-14T14:26:12.752Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 11,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John has pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-14T14:27:44.760Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 12,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John has pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-14T14:28:45.850Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 13,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John has pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-16T09:04:19.363Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 14,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-16T14:05:10.959Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 15,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-16T14:14:11.557Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 16,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-16T14:19:23.364Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 17,
+  "fields": {
+    "patient": 6,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: Hari Ravi pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-16T16:47:18.169Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 18,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-17T05:09:02.507Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 19,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-08-17T08:15:28.037Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 20,
+  "fields": {
+    "patient": 11,
+    "doctor": 1,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: Nehu Sam Abraham pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-09-07T16:34:33.476Z"
+  }
+},
+{
+  "model": "core_app.emergencyalert",
+  "pk": 21,
+  "fields": {
+    "patient": 5,
+    "doctor": 12,
+    "alert_type": "SOS",
+    "message": "EMERGENCY: John pressed the SOS button!",
+    "is_resolved": true,
+    "created_at": "2026-09-08T07:02:12.644Z"
+  }
+},
+{
+  "model": "core_app.diagnosticreport",
+  "pk": 1,
+  "fields": {
+    "patient": 5,
+    "report_file": "diagnostic_reports/Sample_Diagnostic_Lab_Report_MediSense.pdf",
+    "summary": "Report 'Sample_Diagnostic_Lab_Report_MediSense.pdf' analyzed: Key clinical parameters extracted. Elevated Fasting Glucose and Cholesterol flags detected.",
+    "status_flag": "Elevated Risk Flags Detected",
+    "flagged_data": [
+      {
+        "val": "105.0 mg/dL",
+        "metric": "Fasting Blood Sugar",
+        "status": "HIGH"
+      },
+      {
+        "val": "225.0 mg/dL",
+        "metric": "Total Cholesterol",
+        "status": "HIGH"
+      },
+      {
+        "val": "145.0 mg/dL",
+        "metric": "LDL Cholesterol",
+        "status": "HIGH"
+      },
+      {
+        "val": "5.9%",
+        "metric": "HbA1c",
+        "status": "ELEVATED"
+      }
+    ],
+    "created_at": "2026-08-16T15:07:10.897Z"
+  }
+},
+{
+  "model": "core_app.diagnosticreport",
+  "pk": 2,
+  "fields": {
+    "patient": 6,
+    "report_file": "diagnostic_reports/Sample_Diagnostic_Lab_Report_MediSense_k8to5co.pdf",
+    "summary": "Report 'Sample_Diagnostic_Lab_Report_MediSense.pdf' analyzed: Key clinical parameters extracted. Elevated Fasting Glucose and Cholesterol flags detected.",
+    "status_flag": "Elevated Risk Flags Detected",
+    "flagged_data": [
+      {
+        "val": "105.0 mg/dL",
+        "metric": "Fasting Blood Sugar",
+        "status": "HIGH"
+      },
+      {
+        "val": "225.0 mg/dL",
+        "metric": "Total Cholesterol",
+        "status": "HIGH"
+      },
+      {
+        "val": "145.0 mg/dL",
+        "metric": "LDL Cholesterol",
+        "status": "HIGH"
+      },
+      {
+        "val": "5.9%",
+        "metric": "HbA1c",
+        "status": "ELEVATED"
+      }
+    ],
+    "created_at": "2026-09-08T04:14:43.712Z"
+  }
+},
+{
+  "model": "core_app.securemessage",
+  "pk": 1,
+  "fields": {
+    "patient": 5,
+    "sender": 24,
+    "receiver": 5,
+    "subject": "Upcoming Consultation",
+    "body": "You  have a consultation on 25/09/2026 at 10 am. Please remember and come on time.",
+    "is_read": true,
+    "created_at": "2026-09-21T07:14:48.303Z"
+  }
+},
+{
+  "model": "core_app.securemessage",
+  "pk": 2,
+  "fields": {
+    "patient": 5,
+    "sender": 5,
+    "receiver": 24,
+    "subject": "Reply to upcoming consultation",
+    "body": "Sure doctor. I will be there on time.",
+    "is_read": true,
+    "created_at": "2026-09-21T07:21:55.533Z"
+  }
+}
+]

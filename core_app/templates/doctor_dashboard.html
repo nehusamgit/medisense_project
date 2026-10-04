@@ -209,10 +209,17 @@
                                 </button>
                             </td>
                             <td class="py-3 px-4 text-center">
-                              <a href="{% url 'patient_detail' patient.id %}" 
-                                 class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 transition inline-block">
-                                View Reports
-                              </a>
+                              <div class="flex items-center justify-center gap-2">
+                                <a href="{% url 'inbox_thread' patient.id %}" 
+                                   class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-800 text-cyan-400 border border-slate-700 hover:bg-cyan-500/10 hover:border-cyan-500/30 transition inline-flex items-center gap-1 shadow-sm"
+                                   title="Chat with {{ patient.name }}">
+                                  <span>💬 Chat</span>
+                                </a>
+                                <a href="{% url 'patient_detail' patient.id %}" 
+                                   class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 transition inline-block">
+                                  View Reports
+                                </a>
+                              </div>
                             </td>
                         </tr>
                         {% empty %}

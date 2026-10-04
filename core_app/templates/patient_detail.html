@@ -22,8 +22,11 @@
       <a href="{% url 'doctor_dashboard' %}" class="text-xs text-cyan-400 font-semibold hover:underline flex items-center gap-1">
         ← Back to Doctor Dashboard
       </a>
-      <div class="flex items-center gap-4">
-        <a href="{% url 'patient_case_sheet' patient.id %}" class="rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-xs font-bold text-cyan-300 transition hover:bg-cyan-500/20">
+      <div class="flex items-center gap-3">
+        <a href="{% url 'inbox_thread' patient.id %}" class="rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-xs font-bold text-cyan-300 transition hover:bg-cyan-500/20 flex items-center gap-1.5 shadow-sm">
+          <span>💬 Message Patient</span>
+        </a>
+        <a href="{% url 'patient_case_sheet' patient.id %}" class="rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-xs font-bold text-slate-300 transition hover:border-cyan-500/30 hover:text-white">
           Open Case Sheet
         </a>
         <span class="text-xs font-mono text-slate-400">PATIENT ID: #P-{{ patient.id }}</span>
@@ -145,6 +148,40 @@
               <span>Notify via WhatsApp</span>
             </a>
           </div>
+        </div>
+
+        <!-- CURRENT PRESCRIPTIONS LIST & TODAY INTAKE STATUS -->
+        <div class="p-6 rounded-3xl bg-[#0a111e] border border-slate-800 space-y-3 shadow-xl">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-cyan-400">Current Prescriptions</h3>
+            <span class="text-[10px] font-mono text-slate-500">Today: {{ today|date:"M d" }}</span>
+          </div>
+
+          {% if medications %}
+            <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+              {% for med in medications %}
+                <div class="p-2.5 rounded-xl bg-slate-900/70 border border-slate-800 flex items-center justify-between text-xs">
+                  <div>
+                    <p class="font-bold text-slate-200">{{ med.medicine_name }}</p>
+                    <p class="text-[10px] text-slate-400">{{ med.dosage }} • <span class="text-cyan-400">{{ med.timing }}</span></p>
+                  </div>
+                  <div>
+                    {% if med.is_taken_today and med.last_taken_date == today %}
+                      <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                        ✓ Taken
+                      </span>
+                    {% else %}
+                      <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                        ⏳ Pending
+                      </span>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-xs text-slate-500 italic">No prescriptions recorded yet.</p>
+          {% endif %}
         </div>
 
       </div>

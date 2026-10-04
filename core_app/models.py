@@ -105,8 +105,13 @@ class Medication(models.Model):
     last_taken_date = models.DateField(null=True, blank=True) 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def is_taken_for_today(self):
+        return bool(self.is_taken_today and self.last_taken_date == timezone.now().date())
+
     def __str__(self):
-        return f"{self.medicine_name} - {self.patient.user.username}"
+        username = self.patient.user.username if (self.patient and self.patient.user) else getattr(self.patient, 'name', 'Unknown')
+        return f"{self.medicine_name} - {username}"
 
 
 class Appointment(models.Model):

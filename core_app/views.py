@@ -1,5 +1,9 @@
 import re
 import json
+import os
+import joblib
+import pandas as pd
+import numpy as np
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, Http404
 from django.core.exceptions import PermissionDenied
@@ -268,23 +272,30 @@ def patient_dashboard_view(request):
     latest_report = None
     case_notes = PatientCaseSheetNote.objects.none()
 
+    today = timezone.now().date()
+
     if patient_profile:
+        # Dynamic Daily Reset: Ensure any medications from previous days are reset to not taken
+        Medication.objects.filter(
+            patient=patient_profile,
+            is_taken_today=True
+        ).exclude(last_taken_date=today).update(is_taken_today=False)
+
         latest_vital = PatientVital.objects.filter(patient=patient_profile).order_by('-logged_at').first()
         medications = Medication.objects.filter(patient=patient_profile).order_by('-created_at')
         case_notes = PatientCaseSheetNote.objects.filter(patient=patient_profile).select_related('doctor__user')[:10]
         
         latest_report = DiagnosticReport.objects.filter(patient=patient_profile).order_by('-created_at').first()
 
-        today = timezone.now().date()
         upcoming_appointments = Appointment.objects.filter(
-    patient=patient_profile,
-    status__iexact='CONFIRMED',  
-    scheduled_date__gte=today
-).order_by('scheduled_date', 'scheduled_time')
+            patient=patient_profile,
+            status__iexact='CONFIRMED',  
+            scheduled_date__gte=today
+        ).order_by('scheduled_date', 'scheduled_time')
 
         total_meds = medications.count()
         if total_meds > 0:
-            taken_count = medications.filter(is_taken_today=True).count()
+            taken_count = medications.filter(is_taken_today=True, last_taken_date=today).count()
             adherence_rate = round((taken_count / total_meds) * 100)
 
         vitals_qs = list(PatientVital.objects.filter(patient=patient_profile).order_by('-logged_at')[:10])
@@ -309,6 +320,7 @@ def patient_dashboard_view(request):
         'vitals_history_json': json.dumps(vitals_history),
         'latest_report': latest_report,
         'case_notes': case_notes,
+        'today': today,
     }
 
     return render(request, 'patient_dashboard.html', context)
@@ -364,45 +376,109 @@ def log_vitals_view(request):
                 spo2_level=spo2
             )
 
-            critical_conditions = []
-            moderate_conditions = []
+            # --- AI / ML Risk Assessment ---
+            # Determine a HighBP flag from the logged vitals (maps to CDC dataset feature)
+            high_bp_flag = 1 if (sys_bp > 140 or dia_bp > 90) else 0
 
-            if sys_bp > 140 or dia_bp > 90:
-                critical_conditions.append('Hypertension')
-            elif sys_bp < 90 or dia_bp < 60:
-                critical_conditions.append('Hypotension (Low BP)')
+            # Map patient age to CDC age category (1-13 scale: 1=18-24, 9=60-64, 13=80+)
+            patient_age = getattr(patient_profile, 'age', 35)
+            if patient_age < 25:    age_cat = 1
+            elif patient_age < 30:  age_cat = 2
+            elif patient_age < 35:  age_cat = 3
+            elif patient_age < 40:  age_cat = 4
+            elif patient_age < 45:  age_cat = 5
+            elif patient_age < 50:  age_cat = 6
+            elif patient_age < 55:  age_cat = 7
+            elif patient_age < 60:  age_cat = 8
+            elif patient_age < 65:  age_cat = 9
+            elif patient_age < 70:  age_cat = 10
+            elif patient_age < 75:  age_cat = 11
+            elif patient_age < 80:  age_cat = 12
+            else:                   age_cat = 13
 
-            if sugar > 180:
-                critical_conditions.append('Hyperglycemia')
-            elif sugar < 70:
-                critical_conditions.append('Hypoglycemia (Low Sugar)')
+            # Map blood sugar to HighChol proxy (elevated sugar often correlates with lipid issues)
+            high_chol_flag = 1 if sugar > 150 else 0
 
-            if spo2 < 93:
-                critical_conditions.append('Hypoxia (Low Oxygen)')
+            # Estimate BMI from SpO2 as a rough proxy (low SpO2 can indicate obesity/respiratory issue)
+            # Default to average BMI of 27 if no better info
+            bmi_estimate = 30.0 if spo2 < 95 else 25.0
 
-            if not critical_conditions:
-                if 130 <= sys_bp <= 140 or 80 <= dia_bp <= 90:
-                    moderate_conditions.append('Elevated Blood Pressure')
-                if 120 <= sugar <= 180:
-                    moderate_conditions.append('Elevated Blood Sugar')
-                if 93 <= spo2 <= 95:
-                    moderate_conditions.append('Borderline Oxygen Level')
+            # Load the trained ML model and the list of features it expects
+            model_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'diabetes_risk_model.pkl')
+            features_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'model_features.pkl')
 
-            if critical_conditions:
-                risk_score = 0.88
-                risk_level = 'CRITICAL'
-                condition = ' & '.join(critical_conditions) + ' Risk'
-                recommendation = 'Critical vitals detected. Immediate clinical review required.'
-            elif moderate_conditions:
-                risk_score = 0.55
-                risk_level = 'MODERATE'
-                condition = ' & '.join(moderate_conditions)
-                recommendation = 'Monitor vitals closely over the next 24 hours.'
+            risk_score = 0.15
+            risk_level = 'LOW'
+            condition = 'Normal Vitals'
+            recommendation = 'Maintain regular diet, hydration, and daily medication schedule.'
+
+            if os.path.exists(model_path) and os.path.exists(features_path):
+                ml_model = joblib.load(model_path)
+                model_features = joblib.load(features_path)
+
+                # Build the feature vector matching the CDC dataset columns
+                input_data = {
+                    'HighBP': high_bp_flag,
+                    'HighChol': high_chol_flag,
+                    'CholCheck': 1,
+                    'BMI': bmi_estimate,
+                    'Smoker': 0,
+                    'Stroke': 0,
+                    'HeartDiseaseorAttack': 0,
+                    'PhysActivity': 1,
+                    'Fruits': 1,
+                    'Veggies': 1,
+                    'HvyAlcoholConsump': 0,
+                    'AnyHealthcare': 1,
+                    'NoDocbcCost': 0,
+                    'GenHlth': 3,
+                    'MentHlth': 0,
+                    'PhysHlth': 0,
+                    'DiffWalk': 0,
+                    'Sex': 0,
+                    'Age': age_cat,
+                    'Education': 4,
+                    'Income': 5,
+                }
+
+                # Align the input dictionary to exactly match what the model was trained on
+                input_df = pd.DataFrame([input_data])
+                input_df = input_df.reindex(columns=model_features, fill_value=0)
+
+                # Get the probability of diabetes risk (class 1)
+                risk_proba = ml_model.predict_proba(input_df)[0][1]
+                risk_score = round(float(risk_proba), 4)
+
+                # Translate the probability into a risk level
+                # Also factor in critical vitals for the level label
+                if spo2 < 93 or sys_bp > 180 or sugar > 300:
+                    risk_level = 'CRITICAL'
+                    condition = 'Critical Vitals Detected'
+                    recommendation = 'Immediate clinical review required. Contact your doctor now.'
+                elif risk_score >= 0.60 or sys_bp > 140 or sugar > 180:
+                    risk_level = 'HIGH'
+                    condition = 'High Diabetes & Cardiovascular Risk'
+                    recommendation = 'High risk detected by AI. Schedule a clinical consultation soon.'
+                elif risk_score >= 0.35 or (130 <= sys_bp <= 140) or (120 <= sugar <= 180):
+                    risk_level = 'MODERATE'
+                    condition = 'Moderate Risk - Elevated Indicators'
+                    recommendation = 'Monitor vitals closely over the next 24-48 hours.'
+                else:
+                    risk_level = 'LOW'
+                    condition = 'Normal Vitals - Low Risk'
+                    recommendation = 'Maintain regular diet, hydration, and daily medication schedule.'
             else:
-                risk_score = 0.15
-                risk_level = 'NORMAL'  
-                condition = 'Normal Vitals'
-                recommendation = 'Maintain regular diet, hydration, and daily medication schedule.'
+                # Fallback: if the model file is not found, use clinical rules
+                if sys_bp > 140 or dia_bp > 90 or sugar > 180 or spo2 < 93:
+                    risk_score = 0.88
+                    risk_level = 'CRITICAL'
+                    condition = 'Critical Vitals (Fallback Rules)'
+                    recommendation = 'Critical vitals detected. Immediate clinical review required.'
+                elif (130 <= sys_bp <= 140) or (120 <= sugar <= 180):
+                    risk_score = 0.55
+                    risk_level = 'MODERATE'
+                    condition = 'Elevated Indicators (Fallback Rules)'
+                    recommendation = 'Monitor vitals closely over the next 24 hours.'
 
             AIRiskAssessment.objects.create(
                 vital=vital_entry,
@@ -412,7 +488,7 @@ def log_vitals_view(request):
                 recommendation=recommendation
             )
 
-            messages.success(request, f"Vitals logged successfully! AI Risk Assessment: {risk_level}")
+            messages.success(request, f"Vitals logged! AI Risk Score: {risk_score:.0%} ({risk_level})")
 
         except Exception as e:
             messages.error(request, f"Error saving vitals: {str(e)}")
@@ -563,10 +639,18 @@ def vitals_history_api(request):
 def patient_detail_view(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id)
     latest_vital = PatientVital.objects.filter(patient=patient).order_by('-logged_at').first()
+    today = timezone.now().date()
+    Medication.objects.filter(
+        patient=patient,
+        is_taken_today=True
+    ).exclude(last_taken_date=today).update(is_taken_today=False)
+    medications = Medication.objects.filter(patient=patient).order_by('-created_at')
     
     context = {
         'patient': patient,
         'latest_vital': latest_vital,
+        'medications': medications,
+        'today': today,
     }
     return render(request, 'patient_detail.html', context)
 
@@ -813,13 +897,23 @@ def toggle_medication_view(request, med_id):
     medication = get_object_or_404(Medication, id=med_id)
     today = timezone.now().date()
 
-    if not medication.is_taken_today or medication.last_taken_date != today:
-        medication.is_taken_today = True
-        medication.last_taken_date = today
-    else:
-        medication.is_taken_today = False
+    # If the user is a patient, make sure they own this medication
+    if hasattr(request.user, 'patient_profile'):
+        if medication.patient != request.user.patient_profile:
+            messages.error(request, "You are not authorized to update this medication.")
+            return redirect('patient_dashboard')
 
+    # Enforce single click per day: if already taken today, prevent re-clicking
+    if medication.is_taken_today and medication.last_taken_date == today:
+        messages.info(request, f"{medication.medicine_name} has already been logged as taken for today. It will be enabled again tomorrow.")
+        return redirect('patient_dashboard')
+
+    # Mark as taken today
+    medication.is_taken_today = True
+    medication.last_taken_date = today
     medication.save()
+
+    messages.success(request, f"✓ Marked {medication.medicine_name} as taken for today!")
     return redirect('patient_dashboard')    
 
 @login_required
@@ -941,11 +1035,161 @@ def resolve_alert(request, alert_id):
 
 
 @login_required
-def inbox_view(request):
-    secure_messages = SecureMessage.objects.filter(
-        receiver=request.user
-    ).select_related('patient', 'sender').order_by('-created_at')
-    return render(request, 'inbox.html', {'secure_messages': secure_messages})
+def inbox_view(request, patient_id=None):
+    user = request.user
+    is_doctor = hasattr(user, 'doctor_profile')
+    is_patient = hasattr(user, 'patient_profile')
+
+    selected_patient = None
+    other_user = None
+    threads = []
+    messages_list = []
+    default_subjects = [
+        'General Health Question',
+        'Medication Question',
+        'Prescription Refill',
+        'Lab Report Discussion',
+        'Symptoms Update',
+        'Treatment Progress',
+        'Appointment Follow-up',
+    ]
+
+    # Handle sending a message via POST inside the Messenger UI
+    if request.method == 'POST':
+        target_patient_id = request.POST.get('patient_id') or patient_id
+        subject = request.POST.get('subject', 'General Health Question').strip()
+        body = request.POST.get('body', '').strip()
+
+        if not body:
+            messages.error(request, "Message cannot be empty.")
+            if target_patient_id:
+                return redirect('inbox_thread', patient_id=target_patient_id)
+            return redirect('inbox')
+
+        if is_doctor:
+            patient_obj = get_object_or_404(Patient, id=target_patient_id, doctor=user.doctor_profile)
+            receiver_user = patient_obj.user
+            if not receiver_user:
+                messages.error(request, "This patient does not have an active user login.")
+                return redirect('inbox')
+        elif is_patient:
+            patient_obj = user.patient_profile
+            if not patient_obj.doctor or not patient_obj.doctor.user:
+                messages.error(request, "You do not have an assigned doctor to message yet.")
+                return redirect('inbox')
+            receiver_user = patient_obj.doctor.user
+        else:
+            messages.error(request, "Unauthorized to send messages.")
+            return redirect('inbox')
+
+        SecureMessage.objects.create(
+            patient=patient_obj,
+            sender=user,
+            receiver=receiver_user,
+            subject=subject or 'General Health Question',
+            body=body,
+            is_read=False
+        )
+        messages.success(request, "Message sent successfully.")
+        return redirect('inbox_thread', patient_id=patient_obj.id)
+
+    # GET Request: Populate conversation threads and active chat
+    if is_doctor:
+        doctor_profile = user.doctor_profile
+        assigned_patients = Patient.objects.filter(doctor=doctor_profile).select_related('user')
+
+        target_id = patient_id or request.GET.get('patient_id')
+        if target_id:
+            selected_patient = assigned_patients.filter(id=target_id).first()
+
+        for p in assigned_patients:
+            last_msg = SecureMessage.objects.filter(patient=p).order_by('-created_at').first()
+            unread_count = SecureMessage.objects.filter(
+                patient=p,
+                receiver=user,
+                is_read=False
+            ).count()
+
+            threads.append({
+                'patient': p,
+                'patient_id': p.id,
+                'contact_name': p.name or (p.user.get_full_name() if p.user else 'Patient'),
+                'contact_sub': f"Age: {p.age} • {p.condition.capitalize() if p.condition else 'General'}",
+                'avatar_letter': (p.name[0] if p.name else 'P').upper(),
+                'last_message': last_msg,
+                'unread_count': unread_count,
+            })
+
+        # Sort threads so the most recently active or unread threads appear at the top
+        threads.sort(
+            key=lambda t: (
+                t['last_message'].created_at.timestamp() if t['last_message'] else 0
+            ),
+            reverse=True
+        )
+
+        if not selected_patient and threads:
+            selected_patient = threads[0]['patient']
+
+        if selected_patient:
+            other_user = selected_patient.user
+
+    elif is_patient:
+        patient_profile = user.patient_profile
+        selected_patient = patient_profile
+        doctor_profile = patient_profile.doctor
+
+        if doctor_profile and doctor_profile.user:
+            other_user = doctor_profile.user
+            last_msg = SecureMessage.objects.filter(patient=patient_profile).order_by('-created_at').first()
+            unread_count = SecureMessage.objects.filter(
+                patient=patient_profile,
+                receiver=user,
+                is_read=False
+            ).count()
+
+            threads.append({
+                'patient': patient_profile,
+                'patient_id': patient_profile.id,
+                'contact_name': f"Dr. {other_user.get_full_name() or other_user.username}",
+                'contact_sub': f"{doctor_profile.specialization} • Primary Care",
+                'avatar_letter': 'Dr',
+                'last_message': last_msg,
+                'unread_count': unread_count,
+            })
+
+    # Load messages for the selected thread and mark incoming messages as read
+    if selected_patient and other_user:
+        SecureMessage.objects.filter(
+            patient=selected_patient,
+            sender=other_user,
+            receiver=user,
+            is_read=False
+        ).update(is_read=True)
+
+        messages_list = SecureMessage.objects.filter(
+            patient=selected_patient
+        ).filter(
+            (Q(sender=user) & Q(receiver=other_user)) |
+            (Q(sender=other_user) & Q(receiver=user))
+        ).select_related('sender').order_by('created_at')
+
+    total_unread_messages = SecureMessage.objects.filter(
+        receiver=user,
+        is_read=False
+    ).count()
+
+    context = {
+        'is_doctor': is_doctor,
+        'is_patient': is_patient,
+        'threads': threads,
+        'selected_patient': selected_patient,
+        'other_user': other_user,
+        'messages_list': messages_list,
+        'default_subjects': default_subjects,
+        'total_unread_messages': total_unread_messages,
+    }
+    return render(request, 'inbox.html', context)
 
 
 @login_required
@@ -960,52 +1204,10 @@ def message_detail_view(request, message_id):
         message.is_read = True
         message.save(update_fields=['is_read'])
 
-    return render(request, 'message_detail.html', {'message': message})
+    return redirect('inbox_thread', patient_id=message.patient.id)
 
 
 @login_required
 def send_message_view(request, patient_id):
-    try:
-        doctor = request.user.doctor_profile
-    except DoctorProfile.DoesNotExist:
-        doctor = None
-
-    try:
-        patient_user_profile = request.user.patient_profile
-    except Patient.DoesNotExist:
-        patient_user_profile = None
-
-    if doctor is not None:
-        patient = get_object_or_404(Patient, id=patient_id, doctor=doctor)
-        receiver = patient.user
-    elif patient_user_profile is not None:
-        if patient_user_profile.id != patient_id:
-            raise PermissionDenied
-        patient = patient_user_profile
-        receiver = patient.doctor.user if patient.doctor else None
-    else:
-        raise PermissionDenied
-
-    if receiver is None:
-        messages.error(request, 'This patient is not connected to a messaging recipient.')
-        return redirect('inbox')
-
-    if request.method == 'POST':
-        form = SecureMessageForm(request.POST)
-        if form.is_valid():
-            secure_message = form.save(commit=False)
-            secure_message.patient = patient
-            secure_message.sender = request.user
-            secure_message.receiver = receiver
-            secure_message.save()
-            messages.success(request, 'Your secure message was sent.')
-            return redirect('inbox')
-    else:
-        form = SecureMessageForm()
-
-    return render(request, 'send_message.html', {
-        'form': form,
-        'patient': patient,
-        'receiver': receiver,
-    })
+    return redirect('inbox_thread', patient_id=patient_id)
 
