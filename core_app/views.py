@@ -27,6 +27,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 from .models import Patient, DoctorProfile, PatientVital, PatientThreshold, PatientCaseSheetNote, AIRiskAssessment, Medication, Appointment, EmergencyAlert, DiagnosticReport, SecureMessage
 from .forms import SecureMessageForm
+from .ai_services import analyze_diagnostic_report
 
 def register_view(request):
     if request.method == 'POST':
@@ -578,17 +579,12 @@ def upload_report_view(request):
         try:
             patient_profile = Patient.objects.get(user=request.user)
 
-      
-            summary_text = f"Report '{report_file.name}' analyzed: Key clinical parameters extracted. Elevated Fasting Glucose and Cholesterol flags detected."
-            status_text = "Elevated Risk Flags Detected"
-            flags = [
-                {'metric': 'Fasting Blood Sugar', 'val': '105.0 mg/dL', 'status': 'HIGH'},
-                {'metric': 'Total Cholesterol', 'val': '225.0 mg/dL', 'status': 'HIGH'},
-                {'metric': 'LDL Cholesterol', 'val': '145.0 mg/dL', 'status': 'HIGH'},
-                {'metric': 'HbA1c', 'val': '5.9%', 'status': 'ELEVATED'}
-            ]
+            # Run AI Clinical Diagnostic Report Analysis
+            analysis_result = analyze_diagnostic_report(report_file, report_file.name)
+            summary_text = analysis_result.get('summary', f"Report '{report_file.name}' analyzed.")
+            status_text = analysis_result.get('status_flag', 'Diagnostic Analysis Completed')
+            flags = analysis_result.get('flagged_data', [])
 
-        
             DiagnosticReport.objects.create(
                 patient=patient_profile,
                 report_file=report_file,
@@ -597,7 +593,7 @@ def upload_report_view(request):
                 flagged_data=flags
             )
 
-            messages.success(request, f"Report '{report_file.name}' analyzed and saved successfully!")
+            messages.success(request, f"✓ Report '{report_file.name}' analyzed by AI: {status_text}")
 
         except Patient.DoesNotExist:
             messages.error(request, "Patient profile not found.")
@@ -639,6 +635,7 @@ def vitals_history_api(request):
 def patient_detail_view(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id)
     latest_vital = PatientVital.objects.filter(patient=patient).order_by('-logged_at').first()
+    latest_report = DiagnosticReport.objects.filter(patient=patient).order_by('-created_at').first()
     today = timezone.now().date()
     Medication.objects.filter(
         patient=patient,
@@ -649,6 +646,7 @@ def patient_detail_view(request, patient_id):
     context = {
         'patient': patient,
         'latest_vital': latest_vital,
+        'latest_report': latest_report,
         'medications': medications,
         'today': today,
     }

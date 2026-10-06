@@ -518,10 +518,15 @@
             <!-- Flagged Metrics Grid -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
               {% for flag in latest_report.flagged_data %}
-                <div class="p-2.5 rounded-xl border bg-rose-500/5 border-rose-500/20">
-                  <p class="text-[10px] uppercase font-bold text-slate-400 mb-0.5">{{ flag.metric }}</p>
-                  <p class="text-xs font-bold text-rose-400">{{ flag.val }}</p>
-                  <span class="text-[9px] font-mono font-bold text-rose-500">{{ flag.status }}</span>
+                <div class="p-2.5 rounded-xl border {% if flag.status == 'NORMAL' %}bg-emerald-500/5 border-emerald-500/20{% elif flag.status == 'LOW' %}bg-blue-500/5 border-blue-500/20{% elif flag.status == 'ELEVATED' %}bg-amber-500/5 border-amber-500/20{% else %}bg-rose-500/5 border-rose-500/20{% endif %}">
+                  <p class="text-[10px] uppercase font-bold text-slate-400 mb-0.5 truncate" title="{{ flag.metric }}">{{ flag.metric }}</p>
+                  <p class="text-xs font-bold {% if flag.status == 'NORMAL' %}text-emerald-400{% elif flag.status == 'LOW' %}text-blue-400{% elif flag.status == 'ELEVATED' %}text-amber-400{% else %}text-rose-400{% endif %}">{{ flag.val }}</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <span class="text-[9px] font-mono font-bold {% if flag.status == 'NORMAL' %}text-emerald-500{% elif flag.status == 'LOW' %}text-blue-500{% elif flag.status == 'ELEVATED' %}text-amber-500{% else %}text-rose-500{% endif %}">{{ flag.status }}</span>
+                    {% if flag.ref_range %}
+                      <span class="text-[8px] text-slate-400 font-mono truncate max-w-[80px]" title="Ref: {{ flag.ref_range }}">{{ flag.ref_range }}</span>
+                    {% endif %}
+                  </div>
                 </div>
               {% endfor %}
             </div>

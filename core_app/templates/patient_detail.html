@@ -97,6 +97,48 @@
             <p class="text-xs text-slate-500">No vitals recorded for this patient yet.</p>
           {% endif %}
         </div>
+
+        <!-- AI Diagnostic Report Analysis Card -->
+        <div class="p-6 rounded-3xl bg-[#0a111e] border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-cyan-400">AI Diagnostic Report Analysis</h3>
+            {% if latest_report %}
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                File: {{ latest_report.report_file.name }}
+              </span>
+            {% endif %}
+          </div>
+
+          {% if latest_report %}
+            <p class="text-xs text-slate-300 leading-relaxed">{{ latest_report.summary }}</p>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {% for flag in latest_report.flagged_data %}
+                <div class="p-2.5 rounded-xl border {% if flag.status == 'NORMAL' %}bg-emerald-500/5 border-emerald-500/20{% elif flag.status == 'LOW' %}bg-blue-500/5 border-blue-500/20{% elif flag.status == 'ELEVATED' %}bg-amber-500/5 border-amber-500/20{% else %}bg-rose-500/5 border-rose-500/20{% endif %}">
+                  <p class="text-[10px] uppercase font-bold text-slate-400 mb-0.5 truncate" title="{{ flag.metric }}">{{ flag.metric }}</p>
+                  <p class="text-xs font-bold {% if flag.status == 'NORMAL' %}text-emerald-400{% elif flag.status == 'LOW' %}text-blue-400{% elif flag.status == 'ELEVATED' %}text-amber-400{% else %}text-rose-400{% endif %}">{{ flag.val }}</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <span class="text-[9px] font-mono font-bold {% if flag.status == 'NORMAL' %}text-emerald-500{% elif flag.status == 'LOW' %}text-blue-500{% elif flag.status == 'ELEVATED' %}text-amber-500{% else %}text-rose-500{% endif %}">{{ flag.status }}</span>
+                    {% if flag.ref_range %}
+                      <span class="text-[8px] text-slate-400 font-mono truncate max-w-[80px]" title="Ref: {{ flag.ref_range }}">{{ flag.ref_range }}</span>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="p-3 rounded-2xl border bg-[#050913] border-slate-800 flex items-center justify-between text-xs">
+              <span class="font-semibold text-rose-400">
+                ● {{ latest_report.status_flag }}
+              </span>
+              <span class="text-[10px] text-slate-500">
+                Analyzed {{ latest_report.created_at|timesince }} ago
+              </span>
+            </div>
+          {% else %}
+            <p class="text-xs text-slate-500">No diagnostic reports uploaded yet for this patient.</p>
+          {% endif %}
+        </div>
       </div>
 
       <!-- Right Column: Doctor Actions (Medication & Follow-up Forms) -->
